@@ -1,0 +1,17 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: turing-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.2.200-192.168.2.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: turing-adv
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - turing-pool

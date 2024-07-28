@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: plex
+        image: lscr.io/linuxserver/plex:latest
+        ports:
+        - containerPort: 32400
+        env:
+        - name: PUID
+          value: "911"
+        - name: PGID
+          value: "911"
+        - name: TZ
+          value: "Europe/Amsterdam"
+        volumeMounts:
+        - mountPath: /downloads
+          name: downloads
+      volumes:
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: nfs-pvc

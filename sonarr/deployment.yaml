@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      containers:
+      - name: sonarr
+        image: linuxserver/sonarr
+        ports:
+        - containerPort: 8989
+        env:
+        - name: PUID
+          value: "911"
+        - name: PGID
+          value: "911"
+        - name: TZ
+          value: "Europe/Amsterdam"
+        volumeMounts:
+        - mountPath: /downloads
+          name: downloads
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: nfs-pvc
+      - name: config
+        emptyDir: {}
