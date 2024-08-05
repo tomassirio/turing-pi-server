@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv
+  name: nfs-config-pv
 spec:
   capacity:
-    storage: 1Ti
+    storage: 10Gi
   accessModes:
     - ReadWriteMany
   nfs:
-    path: /mnt/ssd/data
+    path: /mnt/ssd/config
     server: 192.168.2.103
