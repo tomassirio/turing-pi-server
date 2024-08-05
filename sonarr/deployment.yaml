@@ -25,13 +25,14 @@ spec:
         - name: TZ
           value: "Europe/Amsterdam"
         volumeMounts:
-        - mountPath: /downloads
-          name: downloads
+        - mountPath: /data
+          name: data
         - name: config
           mountPath: /config
       volumes:
-      - name: downloads
+      - name: data
         persistentVolumeClaim:
           claimName: nfs-pvc
       - name: config
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: nfs-config-pvc
