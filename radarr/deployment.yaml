@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: radarr
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      containers:
+        - name: radarr
+          image: linuxserver/radarr:latest
+          ports:
+            - containerPort: 7878
+          env:
+            - name: PUID
+              value: "911"
+            - name: PGID
+              value: "911"
+            - name: TZ
+              value: "Europe/Amsterdam"
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - name: config
+              mountPath: /config/radarr
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+        - name: config
+          persistentVolumeClaim:
+            claimName: nfs-config-pvc

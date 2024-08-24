@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: plex
+  name: prowlarr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: plex
+      app: prowlarr
   template:
     metadata:
       labels:
-        app: plex
+        app: prowlarr
     spec:
       containers:
-      - name: plex
-        image: lscr.io/linuxserver/plex:latest
+      - name: prowlarr
+        image: lscr.io/linuxserver/prowlarr
         ports:
-        - containerPort: 32400
+        - containerPort: 9696
         env:
         - name: PUID
           value: "911"
@@ -25,9 +25,8 @@ spec:
         - name: TZ
           value: "Europe/Amsterdam"
         volumeMounts:
-        - mountPath: /downloads
-          name: downloads
+        - name: config
+          mountPath: /config
       volumes:
-      - name: downloads
-        persistentVolumeClaim:
-          claimName: nfs-pvc
+      - name: config
+        emptyDir: {}

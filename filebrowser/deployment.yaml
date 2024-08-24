@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      containers:
+        - name: filebrowser
+          image: filebrowser/filebrowser:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: PUID
+              value: "911"
+            - name: PGID
+              value: "911"
+            - name: TZ
+              value: "Europe/Amsterdam"
+          volumeMounts:
+            - mountPath: /srv
+              name: filebrowser-data
+            - mountPath: /config
+              name: filebrowser-config
+      volumes:
+        - name: filebrowser-data
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+        - name: filebrowser-config
+          persistentVolumeClaim:
+            claimName: nfs-config-pvc
