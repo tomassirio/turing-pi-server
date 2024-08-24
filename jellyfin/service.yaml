@@ -6,6 +6,19 @@ spec:
   selector:
     app: jellyfin
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 8096
-  type: ClusterIP
+    - name: dlna
+      port: 1900
+      targetPort: 1900
+      protocol: UDP
+    - name: mdns
+      port: 7359
+      targetPort: 7359
+      protocol: UDP
+    - name: tcp-discovery
+      port: 1901
+      targetPort: 1901
+      protocol: TCP
+  type: LoadBalancer

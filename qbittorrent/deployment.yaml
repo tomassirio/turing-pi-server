@@ -15,25 +15,27 @@ spec:
         app: qbittorrent
     spec:
       containers:
-      - name: qbittorrent
-        image: linuxserver/qbittorrent:latest
-        ports:
-        - containerPort: 8080
-        - containerPort: 6881
-        env:
-        - name: WEBUI_PORT
-          value: "8080"
-        - name: WEBUI_ADMIN_USERNAME
-          value: "admin"
-        - name: WEBUI_ADMIN_PASSWORD
-          value: "tuviejaentanga"
-        volumeMounts:
-        - name: root
-          mountPath: /data
-        # securityContext:
-        #   runAsUser: 911    # Adjust this UID if necessary
-        #   runAsGroup: 911   # Adjust this GID if necessary
+        - name: qbittorrent
+          image: linuxserver/qbittorrent:latest
+          ports:
+            - containerPort: 8080
+            - containerPort: 6881
+          env:
+            - name: WEBUI_PORT
+              value: "8080"
+            - name: PUID
+              value: "911"
+            - name: PGID
+              value: "911"
+          volumeMounts:
+            - name: root
+              mountPath: /data
+            - name: config
+              mountPath: /config/qbittorrent
       volumes:
-      - name: root
-        persistentVolumeClaim:
-          claimName: nfs-pvc
+        - name: root
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+        - name: config
+          persistentVolumeClaim:
+            claimName: nfs-config-pvc
