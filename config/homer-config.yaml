@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homer-config
+data:
+  config.yml: |
+    title: "Kubernetes Services"
+    subtitle: "Quick access to your services"
+    header:
+      - title: "Turing-Pi Cluster Dashboard"
+        tagline: "All applications deployed"
+        # logo: "assets/service/turing.png"
+    services:
+      - name: "Pi-hole"
+        # logo: "assets/service/pihole.png"
+        url: "http://pihole.localhome.com/admin"
+        target: "_blank" # Ensure it opens in a new tab
+      - name: "Sonarr"
+        # logo: "assets/service/sonarr.png"
+        url: "http://sonarr.localhome.com"
+        target: "_blank"
+      - name: "Plex"
+        # logo: "assets/service/plex.png"
+        url: "http://plex.localhome.com"
+        target: "_blank"
+      - name: "Jackett"
+        # logo: "assets/service/jackett.png"
+        url: "http://jackett.localhome.com"
+        target: "_blank"
+    # Add custom theme settings if desired
+    theme:
+      name: "default"
+      colors:
+        primary: "#3498db"
+        secondary: "#2c3e50"

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: plex
+  name: homer
 spec:
   selector:
-    app: plex
+    app: homer
   ports:
     - port: 80
-      targetPort: 32400
+      targetPort: 8080
   type: ClusterIP

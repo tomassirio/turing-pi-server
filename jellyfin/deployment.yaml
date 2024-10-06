@@ -29,6 +29,13 @@ spec:
               name: config
             - mountPath: /data
               name: data
+          resources:
+            requests:
+              cpu: "500m"    # Request half of a CPU core
+              memory: "1Gi"  # Request 1 GiB of memory
+            limits:
+              cpu: "1000m"   # Limit to 1 CPU core
+              memory: "2Gi"  # Limit to 2 GiB of memory
       volumes:
         - name: config
           persistentVolumeClaim:

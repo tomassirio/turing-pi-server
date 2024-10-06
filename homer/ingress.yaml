@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: plex
+  name: homer
 spec:
-  ingressClassName: nginx 
+  ingressClassName: nginx
   rules:
-  - host: plex.localhome.com
+  - host: dashboard.localhome.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: plex
-            port: 
+            name: homer
+            port:
               number: 80
