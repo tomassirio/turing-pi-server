@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emulatorjs
+  labels:
+    app: emulatorjs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emulatorjs
+  template:
+    metadata:
+      labels:
+        app: emulatorjs
+    spec:
+      containers:
+      - name: emulatorjs
+        image: lscr.io/linuxserver/emulatorjs:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 80
+        - containerPort: 4001
+        env:
+        - name: PUID
+          value: "911"
+        - name: PGID
+          value: "911"
+        - name: TZ
+          value: "Etc/UTC"
+        - name: SUBFOLDER
+          value: "/" # Optional
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: nfs-config-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: nfs-pvc
