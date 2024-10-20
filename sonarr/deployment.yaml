@@ -28,7 +28,7 @@ spec:
         - mountPath: /data
           name: data
         - name: config
-          mountPath: /config
+          mountPath: /config/sonarr
       volumes:
       - name: data
         persistentVolumeClaim:

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prowlarr.fullname" . }}
+  labels:
+    app: {{ include "prowlarr.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "prowlarr.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "prowlarr.name" . }}
+    spec:
+      containers:
+        - name: prowlarr
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+          volumeMounts:
+            - name: config
+              mountPath: /config/prowlarr
+      volumes:
+        - name: config
+          {{- if .Values.persistence.config.emptyDir }}
+          emptyDir: {}
+          {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+          {{- end }}

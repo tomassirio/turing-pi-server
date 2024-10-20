@@ -1,0 +1,33 @@
+replicaCount: 1
+
+image:
+  repository: lscr.io/linuxserver/prowlarr
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+webuiPort: 9696
+
+persistence:
+  config:
+    enabled: true
+    emptyDir: true
+
+ingress:
+  enabled: true
+  className: nginx
+  host: prowlarr.localhome.com
+
+env:
+  PUID: "911"
+  PGID: "911"
+  TZ: "Europe/Amsterdam"
+
+autoscaling:
+  enabled: false
+
+serviceAccount:
+  create: false

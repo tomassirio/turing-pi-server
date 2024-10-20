@@ -26,7 +26,7 @@ spec:
           value: "Europe/Amsterdam"
         volumeMounts:
         - name: config
-          mountPath: /config
+          mountPath: /config/prowlarr
       volumes:
       - name: config
         emptyDir: {}
