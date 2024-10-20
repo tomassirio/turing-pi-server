@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: linuxserver/qbittorrent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+webuiPort: 8080
+torrentPort: 6881
+
+persistence:
+  root:
+    enabled: true
+    existingClaim: nfs-pvc
+  config:
+    enabled: true
+    existingClaim: nfs-config-pvc
+
+ingress:
+  enabled: true
+  className: nginx
+  host: qbittorrent.localhome.com
+
+env:
+  PUID: "911"
+  PGID: "911"

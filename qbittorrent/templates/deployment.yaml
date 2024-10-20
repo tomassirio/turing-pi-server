@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}
+  labels:
+    app: {{ include "qbittorrent.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "qbittorrent.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "qbittorrent.name" . }}
+    spec:
+      containers:
+        - name: qbittorrent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+            - containerPort: {{ .Values.torrentPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+          volumeMounts:
+            - name: root
+              mountPath: /data
+            - name: config
+              mountPath: /config/qbittorrent
+      volumes:
+        - name: root
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.root.existingClaim }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
