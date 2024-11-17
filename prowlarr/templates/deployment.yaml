@@ -28,12 +28,12 @@ spec:
               value: "{{ .Values.env.TZ }}"
           volumeMounts:
             - name: config
-              mountPath: /config/prowlarr
+              mountPath: /config
+              subPath: {{ .Values.persistence.config.subPath }}
       volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.data.existingClaim }}
         - name: config
-          {{- if .Values.persistence.config.emptyDir }}
-          emptyDir: {}
-          {{- else }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.config.existingClaim }}
-          {{- end }}

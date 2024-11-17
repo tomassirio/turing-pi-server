@@ -30,7 +30,8 @@ spec:
             - name: data
               mountPath: /data
             - name: config
-              mountPath: /config/sonarr
+              mountPath: /config
+              subPath: {{ .Values.persistence.config.subPath }}
       volumes:
         - name: data
           persistentVolumeClaim:

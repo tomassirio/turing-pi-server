@@ -1,0 +1,18 @@
+# Install Metallb
+helm repo add metallb https://metallb.github.io/metallb
+
+helm install metallb metallb/metallb --namespace metallb-system --create-namespace
+
+# Install Nginx
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+
+# Install CoreDns
+helm install coredns coredns/coredns \
+  --namespace=kube-system \
+  --set service.clusterIP=10.43.0.10 \
+  --set service.name=kube-dns \
+  --set isClusterService=true \
+  --set serviceType=ClusterIP \
+  --set prometheus.service.enabled=true \
+  --set kubernetes.clusterDomain=cluster.local

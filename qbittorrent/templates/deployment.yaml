@@ -17,6 +17,7 @@ spec:
       containers:
         - name: qbittorrent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.webuiPort }}
             - containerPort: {{ .Values.torrentPort }}
@@ -29,7 +30,7 @@ spec:
             - name: root
               mountPath: /data
             - name: config
-              mountPath: /config/qbittorrent
+              mountPath: /config
       volumes:
         - name: root
           persistentVolumeClaim:

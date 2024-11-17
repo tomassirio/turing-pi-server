@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "radarr.fullname" . }}
+  name: {{ include "jellyfin.fullname" . }}
   labels:
-    app: {{ include "radarr.name" . }}
+    app: {{ include "jellyfin.name" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "radarr.name" . }}
+      app: {{ include "jellyfin.name" . }}
   template:
     metadata:
       labels:
-        app: {{ include "radarr.name" . }}
+        app: {{ include "jellyfin.name" . }}
     spec:
       containers:
-        - name: radarr
+        - name: jellyfin
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.webuiPort }}
           env:

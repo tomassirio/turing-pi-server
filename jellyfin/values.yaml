@@ -1,14 +1,52 @@
+# Default values for jellyfin.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 replicaCount: 1
 
 image:
-  repository: lscr.io/linuxserver/prowlarr
+  repository: linuxserver/jellyfin
   tag: latest
   pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  httpPort: 80
+  dlnaPort: 1900
+  mdnsPort: 7359
+  tcpDiscoveryPort: 1901
+
+webuiPort: 8096
+
+persistence:
+  data:
+    enabled: true
+    existingClaim: nfs-pvc
+  config:
+    enabled: true
+    existingClaim: nfs-config-pvc
+    subPath: jellyfin
+
+ingress:
+  enabled: true
+  className: nginx
+  host: jellyfin.localhome.com
+
+env:
+  PUID: "911"
+  PGID: "911"
+  TZ: "Europe/Amsterdam"
+
+# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
   # Annotations to add to the service account
@@ -35,45 +73,13 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
-service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
-
-webuiPort: 9696
-
-persistence:
-  data:
-    enabled: true
-    existingClaim: nfs-pvc
-  config:
-    enabled: true
-    existingClaim: nfs-config-pvc
-    subPath: prowlarr
-
-ingress:
-  enabled: true
-  className: nginx
-  host: prowlarr.localhome.com
-
-env:
-  PUID: "911"
-  PGID: "911"
-  TZ: "Europe/Amsterdam"
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-#   memory: 128Mi
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:

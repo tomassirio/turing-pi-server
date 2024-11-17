@@ -23,11 +23,14 @@ persistence:
   config:
     enabled: true
     existingClaim: nfs-config-pvc
+    subPath: sonarr
 
 ingress:
   enabled: true
   className: nginx
   host: sonarr.localhome.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
 env:
   PUID: "911"

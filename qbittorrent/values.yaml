@@ -61,6 +61,8 @@ ingress:
   enabled: true
   className: nginx
   host: qbittorrent.localhome.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
 env:
   PUID: "911"

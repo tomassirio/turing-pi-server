@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "qbittorrent.fullname" . }}
+  name: {{ include "pihole.fullname" . }}
   annotations:
     {{- range $key, $value := .Values.ingress.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -17,7 +17,14 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "qbittorrent.fullname" . }}
+                name: {{ include "pihole.fullname" . }}
                 port:
-                  number: {{ .Values.service.port }}
+                  number: {{ .Values.service.ports.http.port }}
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "pihole.fullname" . }}
+                port:
+                  number: {{ .Values.service.ports.http.port }}
 {{- end }}

@@ -22,6 +22,7 @@ persistence:
   config:
     enabled: true
     existingClaim: nfs-config-pvc
+    subPath: radarr
 
 ingress:
   enabled: true
