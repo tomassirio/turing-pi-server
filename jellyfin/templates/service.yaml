@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jellyfin.fullname" . }}
+  labels:
+    app: {{ include "jellyfin.name" . }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.httpPort }}
+      targetPort: {{ .Values.webuiPort }}
+    - name: dlna
+      port: {{ .Values.service.dlnaPort }}
+      targetPort: 1900
+      protocol: UDP
+    - name: mdns
+      port: {{ .Values.service.mdnsPort }}
+      targetPort: 7359
+      protocol: UDP
+    - name: tcp-discovery
+      port: {{ .Values.service.tcpDiscoveryPort }}
+      targetPort: 1901
+      protocol: TCP
+  selector:
+    app: {{ include "jellyfin.name" . }}

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "radarr.fullname" . }}
+  labels:
+    app: {{ include "radarr.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "radarr.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "radarr.name" . }}
+    spec:
+      containers:
+        - name: radarr
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+              subPath: {{ .Values.persistence.config.subPath }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.data.existingClaim }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
