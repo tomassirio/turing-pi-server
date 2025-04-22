@@ -4,6 +4,8 @@ metadata:
   name: {{ include "jellyfin.fullname" . }}
   labels:
     app: {{ include "jellyfin.name" . }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.service.loadBalancerIP }}
 spec:
   type: {{ .Values.service.type }}
   ports:
