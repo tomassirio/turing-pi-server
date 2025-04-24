@@ -1,0 +1,14 @@
+{{/*apiVersion: v1*/}}
+{{/*kind: ConfigMap*/}}
+{{/*metadata:*/}}
+{{/*  name: homer-assets*/}}
+{{/*  labels:*/}}
+{{/*    {{- include "homer.labels" . | nindent 4 }}*/}}
+{{/*binaryData:*/}}
+{{/*  {{- $files := .Files }}*/}}
+{{/*  {{- range $path, $bytes := .Files.Glob "assets/icon/*" }}*/}}
+{{/*  {{ base $path }}: {{ $files.Get $path | b64enc | quote }}*/}}
+{{/*  {{- end }}*/}}
+{{/*  {{- range $path, $bytes := .Files.Glob "assets/img/*" }}*/}}
+{{/*  {{ base $path }}: {{ $files.Get $path | b64enc | quote }}*/}}
+{{/*  {{- end }}*/}}
