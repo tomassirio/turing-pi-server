@@ -129,46 +129,14 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-## Init containers configuration
-#initContainers:
-#  - name: copy-assets
-#    image: busybox
-#    command:
-#      - sh
-#      - -c
-#      - |
-#        mkdir -p /www/assets/icons /www/assets/img
-#        cp -r /chart-assets/icon/* /www/assets/icons/ 2>/dev/null || true
-#        cp -r /chart-assets/img/* /www/assets/img/ 2>/dev/null || true
-#        echo "Assets copied successfully"
-#    volumeMounts:
-#      - name: chart-assets
-#        mountPath: /chart-assets
-#      - name: config
-#        mountPath: /www/assets
-#        subPath: homer
-
 # Additional volumes on the output Deployment definition.
 volumes:
-  - name: config
-    persistentVolumeClaim:
-      claimName: nfs-config-pvc
   - name: config-volume
     configMap:
       name: homer-config
-#  - name: chart-assets
-#    configMap:
-#      name: homer-assets
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts:
-  - name: config
-    mountPath: "/www/assets"
-    subPath: homer
   - name: config-volume
     mountPath: "/www/assets/config.yml"
     subPath: "config.yml"

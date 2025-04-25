@@ -22,10 +22,12 @@ data:
         background: "#f5f5f5"
         primary: "#3367d6"
         hover: "#4a89dc"
+        background-image: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/img/cat1.png"
       dark:
         background: "#131313"
         primary: "#3367d6"
         hover: "#4a89dc"
+        background-image: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/img/cat2.png"
 
     # Services organized by category with better FontAwesome icons
     services:
@@ -36,21 +38,21 @@ data:
           columns: 2
         items:
           - name: "Jellyfin"
-            icon: "fas fa-photo-video"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/jellyfin.png"
             tag: "media server"
             tagstyle: "is-primary"
             subtitle: "Stream Movies & TV"
             url: "http://jellyfin.localhome.com"
             target: "_blank"
           - name: "Sonarr"
-            icon: "fas fa-tv"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/sonarr.png"
             tag: "tv"
             tagstyle: "is-info"
             subtitle: "TV Series Management"
             url: "http://sonarr.localhome.com"
             target: "_blank"
           - name: "Radarr"
-            icon: "fas fa-film"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/radarr.png"
             tag: "movies"
             tagstyle: "is-warning"
             subtitle: "Movie Management"
@@ -63,14 +65,14 @@ data:
           collapsed: false
         items:
           - name: "qBittorrent"
-            icon: "fas fa-tachometer-alt"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/qbittorrent.png"
             tag: "torrents"
             tagstyle: "is-success"
             subtitle: "Download Manager"
             url: "http://qbittorrent.localhome.com"
             target: "_blank"
           - name: "Prowlarr"
-            icon: "fas fa-search"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/prowlarr.png"
             tag: "indexers"
             tagstyle: "is-info"
             subtitle: "Search Management"
@@ -81,46 +83,23 @@ data:
         icon: "fas fa-cogs"
         items:
           - name: "File Browser"
-            icon: "fas fa-folder-open"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/filebrowser.png"
             tag: "files"
             tagstyle: "is-info"
             subtitle: "Web File Explorer"
             url: "http://filebrowser.localhome.com"
             target: "_blank"
           - name: "Pi-hole"
-            icon: "fas fa-ban"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/pi-hole.png"
             tag: "ad blocker"
             tagstyle: "is-danger"
             subtitle: "Network Ad Blocker"
             url: "http://pihole.localhome.com/admin"
             target: "_blank"
           - name: "Dashboard"
-            icon: "fas fa-columns"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/homer.png"
             tag: "this page"
             tagstyle: "is-primary"
             subtitle: "Homer Dashboard"
             url: "http://dashboard.localhome.com"
             target: "_blank"
-
-    # Message at the top
-    message:
-      style: "is-info"
-      title: "Welcome to your home network!"
-      content: "All services are up and running. Click any icon to access the service."
-
-    # Custom CSS for background image
-{{/*    custom.css: |*/}}
-{{/*      body {*/}}
-{{/*        background-image: url('assets/img/cat2.png') !important;*/}}
-{{/*        background-size: cover;*/}}
-{{/*        background-position: center;*/}}
-{{/*      }*/}}
-{{/*      .card {*/}}
-{{/*        background-color: rgba(255, 255, 255, 0.85);*/}}
-{{/*      }*/}}
-{{/*      .item {*/}}
-{{/*        transition: transform 0.3s ease;*/}}
-{{/*      }*/}}
-{{/*      .item:hover {*/}}
-{{/*        transform: scale(1.05);*/}}
-{{/*      }*/}}
