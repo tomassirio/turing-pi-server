@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homer-config
+data:
+  config.yml: |
+    ---
+    title: "Home Dashboard"
+    subtitle: "Turing-Pi Cluster Services"
+    icon: "fas fa-rocket"
+    logo: false
+    header: false
+    footer: '<p>Turing-Pi Cluster - <span class="has-text-success">Online</span></p>'
+
+    # Enhanced theme customization
+    theme: default
+    defaults:
+      layout: columns
+      colorTheme: auto
+    colors:
+      light:
+        background: "#f5f5f5"
+        primary: "#3367d6"
+        hover: "#4a89dc"
+      dark:
+        background: "#131313"
+        primary: "#3367d6"
+        hover: "#4a89dc"
+
+    # Services organized by category with better FontAwesome icons
+    services:
+      - name: "Media"
+        icon: "fas fa-film"
+        displayData:
+          collapsed: false
+          columns: 2
+        items:
+          - name: "Jellyfin"
+            icon: "fas fa-photo-video"
+            tag: "media server"
+            tagstyle: "is-primary"
+            subtitle: "Stream Movies & TV"
+            url: "http://jellyfin.localhome.com"
+            target: "_blank"
+          - name: "Sonarr"
+            icon: "fas fa-tv"
+            tag: "tv"
+            tagstyle: "is-info"
+            subtitle: "TV Series Management"
+            url: "http://sonarr.localhome.com"
+            target: "_blank"
+          - name: "Radarr"
+            icon: "fas fa-film"
+            tag: "movies"
+            tagstyle: "is-warning"
+            subtitle: "Movie Management"
+            url: "http://radarr.localhome.com"
+            target: "_blank"
+
+      - name: "Downloads"
+        icon: "fas fa-cloud-download-alt"
+        displayData:
+          collapsed: false
+        items:
+          - name: "qBittorrent"
+            icon: "fas fa-tachometer-alt"
+            tag: "torrents"
+            tagstyle: "is-success"
+            subtitle: "Download Manager"
+            url: "http://qbittorrent.localhome.com"
+            target: "_blank"
+          - name: "Prowlarr"
+            icon: "fas fa-search"
+            tag: "indexers"
+            tagstyle: "is-info"
+            subtitle: "Search Management"
+            url: "http://prowlarr.localhome.com"
+            target: "_blank"
+
+      - name: "System & Utilities"
+        icon: "fas fa-cogs"
+        items:
+          - name: "File Browser"
+            icon: "fas fa-folder-open"
+            tag: "files"
+            tagstyle: "is-info"
+            subtitle: "Web File Explorer"
+            url: "http://filebrowser.localhome.com"
+            target: "_blank"
+          - name: "Pi-hole"
+            icon: "fas fa-ban"
+            tag: "ad blocker"
+            tagstyle: "is-danger"
+            subtitle: "Network Ad Blocker"
+            url: "http://pihole.localhome.com/admin"
+            target: "_blank"
+          - name: "Dashboard"
+            icon: "fas fa-columns"
+            tag: "this page"
+            tagstyle: "is-primary"
+            subtitle: "Homer Dashboard"
+            url: "http://dashboard.localhome.com"
+            target: "_blank"
+
+    # Message at the top
+    message:
+      style: "is-info"
+      title: "Welcome to your home network!"
+      content: "All services are up and running. Click any icon to access the service."
+
+    # Custom CSS for background image
+{{/*    custom.css: |*/}}
+{{/*      body {*/}}
+{{/*        background-image: url('assets/img/cat2.png') !important;*/}}
+{{/*        background-size: cover;*/}}
+{{/*        background-position: center;*/}}
+{{/*      }*/}}
+{{/*      .card {*/}}
+{{/*        background-color: rgba(255, 255, 255, 0.85);*/}}
+{{/*      }*/}}
+{{/*      .item {*/}}
+{{/*        transition: transform 0.3s ease;*/}}
+{{/*      }*/}}
+{{/*      .item:hover {*/}}
+{{/*        transform: scale(1.05);*/}}
+{{/*      }*/}}
