@@ -12,6 +12,24 @@ data:
     header: false
     footer: '<p>Turing-Pi Cluster - <span class="has-text-success">Online</span></p>'
 
+    stylesheet: |
+      /* Changes Header Opacity */
+      body #bighead .first-line {
+        background-color: rgba(0, 0, 0, 0);
+      }
+      body #bighead .navbar {
+        background-color: rgba(0, 0, 0, 0);
+      }
+
+      body .search-bar input {
+        opacity: 20%;
+      }
+
+      body #bighead .navbar a:focus, body #bighead .navbar a:hover {
+        background-color: rgba(0, 0, 0, 0);
+        color: var(--link-hover);
+      }
+
     # Enhanced theme customization
     theme: default
     defaults:
@@ -23,11 +41,15 @@ data:
         primary: "#3367d6"
         hover: "#4a89dc"
         background-image: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/img/cat1.png"
+        card-shadow: rgba(0, 0, 0, 0.5)
+        card-background: "rgba(255, 245, 242, 0.8)"
       dark:
         background: "#131313"
         primary: "#3367d6"
         hover: "#4a89dc"
         background-image: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/img/cat2.png"
+        card-shadow: rgba(0, 0, 0, 0.5)
+        card-background: "rgba(24, 28, 58, 0.8)"
 
     # Services organized by category with better FontAwesome icons
     services:
