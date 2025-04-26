@@ -113,6 +113,13 @@ data:
             subtitle: "Analytics & Monitoring"
             url: "http://grafana.localhome.com"
             target: "_blank"
+          - name: "Prometheus"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/prometheus.png"
+            tag: "metrics"
+            tagstyle: "is-success"
+            subtitle: "Metrics Collection"
+            url: "http://prometheus.localhome.com"
+            target: "_blank"
 
       - name: "System & Utilities"
         icon: "fas fa-cogs"
