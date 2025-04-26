@@ -101,6 +101,19 @@ data:
             url: "http://prowlarr.localhome.com"
             target: "_blank"
 
+      - name: "Monitoring"
+        icon: "fas fa-chart-line"
+        displayData:
+          collapsed: false
+        items:
+          - name: "Grafana"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/grafana.png"
+            tag: "metrics"
+            tagstyle: "is-success"
+            subtitle: "Analytics & Monitoring"
+            url: "http://grafana.localhome.com"
+            target: "_blank"
+
       - name: "System & Utilities"
         icon: "fas fa-cogs"
         items:
