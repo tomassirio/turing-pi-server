@@ -69,6 +69,9 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
+        - path: /webui
+          pathType: Prefix
+          servicePort: 3000
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
