@@ -80,6 +80,13 @@ data:
             subtitle: "Movie Management"
             url: "http://radarr.localhome.com"
             target: "_blank"
+          - name: "Bazarr"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/bazarr.png"
+            tag: "subtitles"
+            tag style: "is-danger"
+            subtitle: "Subtitle Management"
+            url: "http://bazarr.localhome.com"
+            target: "_blank"
       - name: "Gaming"
         icon: "fas fa-gamepad"
         displayData:
