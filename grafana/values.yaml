@@ -39,12 +39,12 @@ podAnnotations: {}
 podLabels: {}
 
 securityContext:
-  runAsUser: 472
-  runAsGroup: 472
-  fsGroup: 472
+  runAsUser: 911
+  runAsGroup: 911
+  fsGroup: 911
 
 podSecurityContext:
-  fsGroup: 472
+  fsGroup: 911
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
@@ -103,15 +103,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-persistence:
-  data:
-    enabled: true
-    existingClaim: nfs-pvc
-  config:
-    enabled: true
-    existingClaim: nfs-config-pvc
-    subPath: grafana
 
 volumes:
   - name: grafana-data
