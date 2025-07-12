@@ -96,12 +96,6 @@ data:
             apikey: "34a7e1d2388a486eb29c1b7779c2bcb9"
             url: "http://lidarr.localhome.com"
             target: "_blank"
-{{/*      - name: "Gaming"*/}}
-{{/*        icon: "fas fa-gamepad"*/}}
-{{/*        displayData:*/}}
-{{/*          collapsed: false*/}}
-{{/*          columns: 2*/}}
-{{/*        items:*/}}
       - name: "Downloads"
         icon: "fas fa-cloud-download-alt"
         displayData:
@@ -165,7 +159,6 @@ data:
           - name: "Technitium"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/technitium.png"
             tag: "DNS & DHCP"
-            type: "Technitium"
             tag style: "is-info"
             subtitle: "DNS & DHCP Management"
             url: "http://technitium.localhome.com/"
