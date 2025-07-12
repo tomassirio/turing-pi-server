@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "technitium.fullname" . }}
+  labels:
+    {{- include "technitium.labels" . | nindent 4 }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.service.loadBalancerIP }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 5380
+      protocol: TCP
+      name: http
+    - name: https
+      port: 443
+      targetPort: 53443
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dhcp
+      port: 67
+      targetPort: 67
+      protocol: UDP
+    - name: dot
+      port: 853
+      targetPort: 853
+      protocol: TCP
+    - name: doh-reverse
+      port: 8053
+      targetPort: 8053
+      protocol: TCP
+  selector:
+    {{- include "technitium.selectorLabels" . | nindent 4 }}

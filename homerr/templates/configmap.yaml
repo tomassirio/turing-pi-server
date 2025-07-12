@@ -65,12 +65,17 @@ data:
             tag style: "is-primary"
             subtitle: "Stream Movies & TV"
             url: "http://jellyfin.localhome.com"
+            apikey: "96f0d4052bba4298a98e5b79e82abda4"
+            type: "Emby"
+            libraryType: "music"
             target: "_blank"
           - name: "Sonarr"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/sonarr.png"
             tag: "tv"
             tag style: "is-info"
             subtitle: "TV Series Management"
+            type: "Sonarr"
+            apikey: "460dbbb752774c2995477a98949aacda"
             url: "http://sonarr.localhome.com"
             target: "_blank"
           - name: "Radarr"
@@ -78,6 +83,8 @@ data:
             tag: "movies"
             tag style: "is-warning"
             subtitle: "Movie Management"
+            type: "Radarr"
+            apikey: "463f2c3e5db9489abb0e76c2eede3069"
             url: "http://radarr.localhome.com"
             target: "_blank"
           - name: "Lidarr"
@@ -85,22 +92,16 @@ data:
             tag: "music"
             tag style: "is-danger"
             subtitle: "Music Management"
+            type: "Lidarr"
+            apikey: "34a7e1d2388a486eb29c1b7779c2bcb9"
             url: "http://lidarr.localhome.com"
             target: "_blank"
-      - name: "Gaming"
-        icon: "fas fa-gamepad"
-        displayData:
-          collapsed: false
-          columns: 2
-        items:
-          - name: "EmulatorJS"
-            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/emulatorjs.png"
-            tag: "gaming"
-            tag style: "is-danger"
-            subtitle: "Retro Gaming Console"
-            url: "http://emulatorjs.localhome.com"
-            target: "_blank"
-
+{{/*      - name: "Gaming"*/}}
+{{/*        icon: "fas fa-gamepad"*/}}
+{{/*        displayData:*/}}
+{{/*          collapsed: false*/}}
+{{/*          columns: 2*/}}
+{{/*        items:*/}}
       - name: "Downloads"
         icon: "fas fa-cloud-download-alt"
         displayData:
@@ -112,6 +113,9 @@ data:
             tag style: "is-success"
             subtitle: "Download Manager"
             url: "http://qbittorrent.localhome.com"
+            type: "qBittorrent"
+            rateInterval: 2000 # Interval for updating the download and upload rates.
+            torrentInterval: 5000 # Interval for updating the torrent count.
             target: "_blank"
           - name: "Prowlarr"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/prowlarr.png"
@@ -119,6 +123,8 @@ data:
             tag style: "is-info"
             subtitle: "Search Management"
             url: "http://prowlarr.localhome.com"
+            type: "Prowlarr"
+            apikey: "c459057ce6e44a24907308fcbd69c3e7"
             target: "_blank"
           - name: "Bazarr"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/bazarr.png"
@@ -146,7 +152,6 @@ data:
             subtitle: "Metrics Collection"
             url: "http://prometheus.localhome.com"
             target: "_blank"
-
       - name: "System & Utilities"
         icon: "fas fa-cogs"
         items:
@@ -157,12 +162,13 @@ data:
             subtitle: "Web File Explorer"
             url: "http://filebrowser.localhome.com"
             target: "_blank"
-          - name: "Pi-hole"
-            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/pi-hole.png"
-            tag: "ad blocker"
-            tag style: "is-danger"
-            subtitle: "Network Ad Blocker"
-            url: "http://pihole.localhome.com/admin"
+          - name: "Technitium"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/technitium.png"
+            tag: "DNS & DHCP"
+            type: "Technitium"
+            tag style: "is-info"
+            subtitle: "DNS & DHCP Management"
+            url: "http://technitium.localhome.com/"
             target: "_blank"
           - name: "Dashboard"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/homer.png"
