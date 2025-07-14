@@ -96,6 +96,20 @@ data:
             apikey: "34a7e1d2388a486eb29c1b7779c2bcb9"
             url: "http://lidarr.localhome.com"
             target: "_blank"
+      - name: "Gaming"
+        icon: "fas fa-gamepad"
+        displayData:
+          collapsed: false
+          columns: 2
+          items:
+          - name: "Retroarch"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/retroarch.png"
+            tag: "gaming"
+            tag style: "is-danger"
+            subtitle: "Retro Gaming Console"
+            url: "http://retroarch.localhome.com"
+            target: "_blank"
+
       - name: "Downloads"
         icon: "fas fa-cloud-download-alt"
         displayData:
