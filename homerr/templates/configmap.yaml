@@ -69,6 +69,13 @@ data:
             type: "Emby"
             libraryType: "music"
             target: "_blank"
+          - name: "Jellyseerr"
+            logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/jellyseerr.png"
+            tag: "media server"
+            tag style: "is-primary"
+            subtitle: "Look for Movies and Series"
+            url: "http://jellyseerr.localhome.com"
+            target: "_blank"
           - name: "Sonarr"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/sonarr.png"
             tag: "tv"
@@ -100,8 +107,7 @@ data:
         icon: "fas fa-gamepad"
         displayData:
           collapsed: false
-          columns: 2
-          items:
+        items:
           - name: "Retroarch"
             logo: "https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/retroarch.png"
             tag: "gaming"
