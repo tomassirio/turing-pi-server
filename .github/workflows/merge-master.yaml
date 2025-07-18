@@ -25,7 +25,7 @@ jobs:
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: https://gist.github.com/tomassirio/54521673e7feb0e657d92ec385be3851
+          gistID: 54521673e7feb0e657d92ec385be3851
           filename: turing-pi-services.json
           label: Services
           message: ${{ steps.count.outputs.count }}
