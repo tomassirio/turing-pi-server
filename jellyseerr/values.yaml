@@ -55,7 +55,7 @@ service:
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 80
-  servicePort: 5055
+  targetPort: 5055
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -82,9 +82,9 @@ env:
 
 resources:
   requests:
-    ephemeral-storage: "512Mi"
+    ephemeral-storage: "100Mi"
   limits:
-    ephemeral-storage: "1Gi"
+    ephemeral-storage: "300Mi"
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 #livenessProbe:
@@ -107,7 +107,7 @@ autoscaling:
 # Additional volumes on the output Deployment definition.
 volumeMounts:
   - name: config
-    mountPath: /config
+    mountPath: /app/config
     subPath: jellyseerr
   - name: data
     mountPath: /data
@@ -119,6 +119,7 @@ volumes:
   - name: data
     persistentVolumeClaim:
       claimName: nfs-pvc
+
 nodeSelector: {}
 
 tolerations: []
