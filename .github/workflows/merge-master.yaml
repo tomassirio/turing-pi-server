@@ -14,12 +14,15 @@ jobs:
       - name: Count Services
         id: count
         run: |
-          # Count directories excluding assets, config, storage, test, .github
-          SERVICE_COUNT=$(find . -maxdepth 1 -type d -not -path "./assets" -not -path "./config" -not -path "./storage" -not -path "./test" -not -path "./.github" -not -path "./.*" | wc -l)
-          # Subtract 1 for the current directory (.)
-          SERVICE_COUNT=$((SERVICE_COUNT - 1))
+          # Count directories only in the services folder
+          if [ -d "./services" ]; then
+            SERVICE_COUNT=$(find ./services -maxdepth 1 -type d -not -path "./services" | wc -l)
+            echo "Services found: $SERVICE_COUNT"
+          else
+            echo "Services folder not found!"
+            SERVICE_COUNT=0
+          fi
           echo "count=$SERVICE_COUNT" >> $GITHUB_OUTPUT
-          echo "Services found: $SERVICE_COUNT"
 
       - name: Update Badge
         uses: schneegans/dynamic-badges-action@v1.7.0

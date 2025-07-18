@@ -24,3 +24,18 @@
   <img src="https://img.shields.io/github/issues/tomassirio/turing-pi-server" alt="GitHub issues">
   <img src="https://img.shields.io/github/stars/tomassirio/turing-pi-server" alt="GitHub stars">
 </p>
+
+## Set-Up
+
+This cluster depends on:
+
+- MetalLB
+- Nginx
+- CoreDns
+
+Also, the current Storage uses an NFS shared drive (will change soon). Thus, install the `PersistentVolumes` and `PersistentVolumeClaims` in /storage:
+
+- storage/nfs-config-pv.yaml
+- storage/nfs-config-pvc.yaml
+- storage/nfs-pv.yaml
+- storage/nfs-pvc.yaml
