@@ -2,4 +2,4 @@
 *.DS_Store
 .idea/
 .idea
-./twingate/.env
+services/twingate/.env
