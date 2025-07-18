@@ -1,0 +1,32 @@
+name: Merge Master
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Count Services
+        id: count
+        run: |
+          # Count directories excluding assets, config, storage, test, .github
+          SERVICE_COUNT=$(find . -maxdepth 1 -type d -not -path "./assets" -not -path "./config" -not -path "./storage" -not -path "./test" -not -path "./.github" -not -path "./.*" | wc -l)
+          # Subtract 1 for the current directory (.)
+          SERVICE_COUNT=$((SERVICE_COUNT - 1))
+          echo "count=$SERVICE_COUNT" >> $GITHUB_OUTPUT
+          echo "Services found: $SERVICE_COUNT"
+
+      - name: Update Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: https://gist.github.com/tomassirio/54521673e7feb0e657d92ec385be3851
+          filename: turing-pi-services.json
+          label: Services
+          message: ${{ steps.count.outputs.count }}
+          color: blue
