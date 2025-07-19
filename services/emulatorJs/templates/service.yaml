@@ -11,6 +11,10 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.mainPort}}
+      targetPort: {{ .Values.service.mainPort}}
+      protocol: TCP
+      name: main
   selector:
     {{- include "emulatorJs.selectorLabels" . | nindent 4 }}
 

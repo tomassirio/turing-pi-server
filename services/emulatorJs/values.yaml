@@ -7,11 +7,12 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: lscr.io/linuxserver/emulatorjs
+  repository: ghcr.io/linuxserver/emulatorjs
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
 #  tag: arm64v8-latest
+  tag: 1.9.2-ls173
 
 # This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -68,7 +69,20 @@ ingress:
     - host: emulatorjs.localhome.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
+          backend:
+            service:
+              port:
+                number: 80
+    - host: config.emulatorjs.localhome.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              port:
+                number: 3000
+
 
   tls: []
   #  - secretName: chart-example-tls
