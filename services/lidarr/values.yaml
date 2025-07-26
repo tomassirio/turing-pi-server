@@ -129,10 +129,10 @@ volumeMounts:
 volumes:
   - name: data
     persistentVolumeClaim:
-      claimName: nfs-pvc
+      claimName: nas-pvc
   - name: config
     persistentVolumeClaim:
-      claimName: nfs-config-pvc
+      claimName: nas-config-pvc
 
 nodeSelector: {}
 

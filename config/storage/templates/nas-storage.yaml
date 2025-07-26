@@ -1,0 +1,51 @@
+{{- with .Values.nas }}
+  {{- $server := .pv.server }}
+  {{- $reclaimPolicy := .pv.persistentVolumeReclaimPolicy }}
+
+  {{- range $type, $volumes := dict "data" .pv.data "config" .pv.config }}
+    {{- range $volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: storage
+    meta.helm.sh/release-namespace: default
+spec:
+  capacity:
+    storage: {{ .storage }}
+  accessModes:
+    - {{ .accessMode }}
+  persistentVolumeReclaimPolicy: {{ $reclaimPolicy }}
+  nfs:
+    path: {{ .path }}
+    server: {{ $server }}
+    {{- end }}
+  {{- end }}
+
+  {{- range $type, $pvcs := dict "data" .pvc.data "config" .pvc.config }}
+    {{- range $pvcs }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: storage
+    meta.helm.sh/release-namespace: default
+spec:
+  storageClassName: ""
+  accessModes:
+    - {{ .accessMode }}
+  resources:
+    requests:
+      storage: {{ .storage }}
+  volumeName: {{ .persistentVolumeName }}
+    {{- end }}
+  {{- end }}
+{{- end }}

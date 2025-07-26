@@ -1,0 +1,41 @@
+{{- with .Values.nfs }}
+  {{- $server := .pv.server }}
+  {{- $reclaimPolicy := .pv.persistentVolumeReclaimPolicy }}
+
+  {{- range $type, $volumes := dict "data" .pv.data "config" .pv.config }}
+    {{- range $volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .name }}
+spec:
+  capacity:
+    storage: {{ .storage }}
+  accessModes:
+    - {{ .accessMode }}
+  persistentVolumeReclaimPolicy: {{ $reclaimPolicy }}
+  nfs:
+    path: {{ .path }}
+    server: {{ $server }}
+    {{- end }}
+  {{- end }}
+
+  {{- range $type, $pvcs := dict "data" .pvc.data "config" .pvc.config }}
+    {{- range $pvcs }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}
+spec:
+  storageClassName: ""
+  accessModes:
+    - {{ .accessMode }}
+  resources:
+    requests:
+      storage: {{ .storage }}
+  volumeName: {{ .persistentVolumeName }}
+    {{- end }}
+  {{- end }}
+{{- end }}

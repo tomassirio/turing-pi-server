@@ -3,3 +3,4 @@
 .idea/
 .idea
 services/twingate/.env
+services/testing/*

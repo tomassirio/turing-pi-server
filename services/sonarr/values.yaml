@@ -19,10 +19,10 @@ webuiPort: 8989
 persistence:
   data:
     enabled: true
-    existingClaim: nfs-pvc
+    existingClaim: nas-pvc
   config:
     enabled: true
-    existingClaim: nfs-config-pvc
+    existingClaim: nas-config-pvc
     subPath: sonarr
 
 ingress:
