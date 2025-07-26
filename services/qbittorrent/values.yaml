@@ -52,10 +52,10 @@ torrentPort: 6881
 persistence:
   root:
     enabled: true
-    existingClaim: nfs-pvc
+    existingClaim: nas-pvc
   config:
     enabled: true
-    existingClaim: nfs-config-pvc
+    existingClaim: nas-config-pvc
 
 ingress:
   enabled: true

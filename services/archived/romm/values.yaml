@@ -1,4 +1,4 @@
-# Default values for grafana.
+# Default values for romm.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,17 +7,46 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: grafana/grafana
+  repository: ghcr.io/rommapp/romm
   # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: latest
 
 # This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
+
+persistence:
+  enabled: true
+  data:
+    name: nfs-pvc
+    size: 10Gi
+  config:
+    name: nfs-config-pvc
+    size: 2Gi
+
+env:
+  - name: DB_NAME
+    value: "rommdb"
+  - name: DB_USER
+    value: "rommuser"
+  - name: DB_PASSWORD
+    value: "your-secure-db-password"
+  - name: DB_HOST
+    value: "mariadb.default.svc.cluster.local"
+  - name: ROMM_AUTH_SECRET_KEY
+    value: "03a054b6ca27e0107c5eed552ea66becd9f3a2a8a91e7595cd462a593f9ecd09"
+  - name: IGDB_CLIENT_ID
+    value: "your-igdb-client-id"
+  - name: IGDB_CLIENT_SECRET
+    value: "your-igdb-client-secret"
+  - name: SCREENSCRAPER_USER
+    value: "your-ss-username"
+  - name: SCREENSCRAPER_PASSWORD
+    value: "your-ss-password"
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
@@ -38,13 +67,13 @@ podAnnotations: {}
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-securityContext:
-  runAsUser: 911
-  runAsGroup: 911
-  fsGroup: 911
-
-podSecurityContext:
-  fsGroup: 911
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
@@ -59,8 +88,10 @@ ingress:
   className: nginx
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: grafana.localhome.com
+    - host: romm.localhome.com
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -69,32 +100,29 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  requests:
+    ephemeral-storage: 200Mi
+  limits:
+    ephemeral-storage: 500Mi
+
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe:
-  httpGet:
-    path: /api/health
-    port: 3000
-  initialDelaySeconds: 60
-  timeoutSeconds: 30
-  failureThreshold: 10
+#livenessProbe:
+#  httpGet:
+#    path: /
+#    port: http
 readinessProbe:
-  httpGet:
-    path: /api/health
-    port: 3000
+  exec:
+    command:
+      - /opt/bitnami/mariadb/bin/mariadb-admin
+      - status
+      - -uroot
+      - -p$(KPgVstsBZU%)
   initialDelaySeconds: 30
-  timeoutSeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -104,27 +132,54 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-volumes:
-  - name: grafana-data
-    persistentVolumeClaim:
-      claimName: nas-pvc
-  - name: grafana-config
-    persistentVolumeClaim:
-      claimName: nas-config-pvc
-
+# Additional volumes on the output Deployment definition.
 volumeMounts:
-  - name: grafana-data
-    mountPath: /var/lib/grafana
-  - name: grafana-config
-    mountPath: /etc/grafana
-    subPath: grafana
+  - name: config
+    mountPath: /config
+    subPath: romm
+  - name: data
+    mountPath: /data
 
-env:
-  - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
-    value: "*"
+volumes:
+  - name: config
+    persistentVolumeClaim:
+      claimName: nfs-config-pvc
+  - name: data
+    persistentVolumeClaim:
+      claimName: nfs-pvc
 
 nodeSelector: {}
 
-tolerations: []
+tolerations:
+  - key: "node.kubernetes.io/disk-pressure"
+    operator: "Exists"
+    effect: "NoSchedule"
 
-affinity: {}
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - romm
+        topologyKey: "kubernetes.io/hostname"
+
+mariadb:
+  primary:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - turing-03
+    tolerations:
+      - key: "node.kubernetes.io/disk-pressure"
+        operator: "Exists"
+        effect: "NoSchedule"
+    persistence:
+      storageClass: "local-path"
