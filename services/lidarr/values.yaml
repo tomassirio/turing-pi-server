@@ -7,7 +7,7 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: lscr.io/linuxserver/lidarr
+  repository: blampe/lidarr
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -75,8 +75,8 @@ ingress:
   #      - chart-example.local
 
 env:
-  PUID: "911"
-  PGID: "911"
+  PUID: "1000"
+  PGID: "1000"
   TZ: "Europe/Amsterdam"
 
 resources: {}
