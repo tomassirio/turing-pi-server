@@ -31,6 +31,7 @@ spec:
               mountPath: /data
             - name: config
               mountPath: /config
+        {{- if .Values.vpn.enabled }}
         - name: gluetun
           image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
           imagePullPolicy: {{ .Values.vpn.image.pullPolicy }}
