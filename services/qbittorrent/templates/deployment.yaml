@@ -31,6 +31,29 @@ spec:
               mountPath: /data
             - name: config
               mountPath: /config
+        - name: gluetun
+          image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
+          imagePullPolicy: {{ .Values.vpn.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          envFrom:
+            - secretRef:
+                name: {{ .Values.vpn.secretName }}
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: {{ .Values.vpn.provider }}
+            - name: VPN_TYPE
+              value: {{ .Values.vpn.type }}
+            - name: SERVER_COUNTRIES
+              value: {{ .Values.vpn.countries }}
+            - name: DOT
+              value: {{ .Values.vpn.dot | quote }}
+            - name: DNS_ADDRESS
+              value: {{ .Values.vpn.dnsAddress | quote }}
+            - name: HEALTH_TARGET_ADDRESS
+              value: {{ .Values.vpn.healthTargetAddress | quote }}
       volumes:
         - name: root
           persistentVolumeClaim:
@@ -38,3 +61,4 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.config.existingClaim }}
+

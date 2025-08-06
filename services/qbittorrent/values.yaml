@@ -115,4 +115,21 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+# This is for setting up the VPN more information can be found here: https://github.com/qdm12/gluetun-wiki/tree/main
+vpn:
+  enabled: true
+  secretName: protonvpn-secret
+  provider: protonvpn
+  type: openvpn
+  countries: "Switzerland,Iceland,Canada,Brazil,Malaysia,Japan,South Africa,New Zealand,Sweden,Panama"
+  dot: "off"
+  dnsAddress: "1.1.1.1"
+  healthTargetAddress: "cloudflare.com"
+  image:
+    repository: qmcgaw/gluetun
+    tag: latest
+    pullPolicy: IfNotPresent
+  securityContext:
+    capabilities:
+      add:
+        - NET_ADMIN
