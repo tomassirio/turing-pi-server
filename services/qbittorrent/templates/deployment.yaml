@@ -52,6 +52,7 @@ spec:
               value: {{ .Values.vpn.dnsAddress | quote }}
             - name: HEALTH_TARGET_ADDRESS
               value: {{ .Values.vpn.healthTargetAddress | quote }}
+        {{- end }}
       volumes:
         - name: root
           persistentVolumeClaim:
