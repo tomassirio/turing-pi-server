@@ -54,8 +54,7 @@ service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
-  servicePort: 11011
+  port: 11011
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -89,8 +88,8 @@ resources: {}
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /health
+    port: 11011
   initialDelaySeconds: 10
   timeoutSeconds: 5
   periodSeconds: 10
@@ -98,8 +97,8 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /health
+    port: 11011
   initialDelaySeconds: 10
   timeoutSeconds: 5
   periodSeconds: 10
@@ -128,6 +127,8 @@ env:
   PUID: "1000"
   PGID: "1000"
   TZ: "Europe/Amsterdam"
+  PORT: "11011"
+  BASE_PATH: ""
 
 nodeSelector: {}
 
