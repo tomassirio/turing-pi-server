@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cleanuparr.fullname" . }}
+  labels:
+    {{- include "cleanuparr.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.servicePort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "cleanuparr.selectorLabels" . | nindent 4 }}
