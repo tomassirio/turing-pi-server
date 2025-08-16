@@ -1,0 +1,45 @@
+k3s_cluster:
+    children:
+        server:
+            hosts:
+                192.168.2.105: null
+        agent:
+            hosts:
+                192.168.2.101: null
+                192.168.2.102: null
+                192.168.2.103: null
+                192.168.2.104: null
+    # Required Vars
+    vars:
+        ansible_port: 22
+        ansible_user: pi
+        k3s_version: v1.26.9+k3s1
+        # The token should be a random string of reasonable length. You can generate
+        # one with the following commands:
+        # - openssl rand -base64 64
+        # - pwgen -s 64 1
+        # You can use ansible-vault to encrypt this value / keep it secret.
+        token: ENC[AES256_GCM,data:m7zAj2ExTOSxxZESATOWyfvqYkwRVFQHG2Zzan5FuXh/tfYetvFdyuuwiYS9jiU1zziN2/kLgmPMijxDtJEI6BuP8y3NDT4kbr8tRdUtUfdN97UVUFnEhQ==,iv:V+PZ9DUxJIMW30OOL1nRJpamyNdIsWbGIKFFQYJZ1JQ=,tag:nCS2cLedr6+cpymDgJeXZQ==,type:str]
+        api_endpoint: '{{ hostvars[groups[''server''][0]][''ansible_host''] | default(groups[''server''][0]) }}'
+        extra_server_args: ""
+        extra_agent_args: ""
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1gvj0fs2ff79gv6dzqp2cenrxsr20dryppt9rata8e37errr2lf3q3pyk8t
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWL2ZnbVA0ZjdQb1VNRldw
+            Zk10VWtpa2QvVmxzeC9hNVpySnhMRkhIUlQ4CnJpNU45cXFhcmRKV2pSY0QzbUdK
+            OVF0SlRYR0dOSFd4NFdEQVBVUk1rcmcKLS0tIDJjRFRjZEROaFUwYTFOQlFLYzFB
+            MkQ5Sm54emNaZzVGUUFuR3Ztd2dscEEK2d/UfyUzm7j0DYLf4CfX/prwksw9v2o1
+            fGK/6oIIitkSCYgsxzkrmLanNceZBZ4qLir6BOCmuzZqeS8inCIhsA==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2025-08-16T06:28:50Z"
+    mac: ENC[AES256_GCM,data:6P/5mD3OK++msH8CRAYTYFXq8D9Ue9PBDdbpNY+jsljX9hUwYFzLQ6PiOOyzGbQY8Kh4R8PeuNDAxTC9VCT6m8+1dzAPlEaLRgUhClzqOyN7d2Fpz7SUAH1Cm6fcDCbLdCtzR3hb/hlwdYOtiecuI8clB2R5utt0JrXBSlz49AQ=,iv:HiZ0X1jmfqpmCcUKXh1L9LGOCuz7w7D7Edwgro716eE=,tag:IZqJlAyXtkoHgdnjLrV4BA==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData|token)$
+    version: 3.9.0
