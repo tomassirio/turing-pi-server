@@ -80,12 +80,6 @@ env:
   PGID: "911"
   TZ: "Europe/Amsterdam"
 
-resources:
-  requests:
-    ephemeral-storage: "100Mi"
-  limits:
-    ephemeral-storage: "300Mi"
-
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 #livenessProbe:
 #  httpGet:
