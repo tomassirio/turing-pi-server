@@ -1,0 +1,6 @@
+apiVersion: v2
+name: flaresolverr
+description: A Helm chart for FlareSolverr - Proxy server to bypass Cloudflare protection
+type: application
+version: 0.1.0
+appVersion: "latest"
