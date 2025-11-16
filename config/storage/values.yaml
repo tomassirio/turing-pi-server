@@ -131,6 +131,16 @@ nfs:
         storage: 1Ti
         accessMode: ReadWriteMany
         path: /mnt/ssd/data
+      - name: postgres-dev-pv
+        storage: 50Gi
+        accessMode: ReadWriteOnce
+        path: /mnt/ssd/postgres-dev
+        namespace: wanderer-dev
+      - name: postgres-pv
+        storage: 50Gi
+        accessMode: ReadWriteOnce
+        path: /mnt/ssd/postgres
+        namespace: wanderer
     config:
       - name: nfs-config-pv
         storage: 10Gi
@@ -142,6 +152,16 @@ nfs:
         storage: 1Ti
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-pv
+      - name: postgres-dev-pvc
+        storage: 50Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: postgres-dev-pv
+        namespace: wanderer-dev
+      - name: postgres-pvc
+        storage: 50Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: postgres-pv
+        namespace: wanderer
     config:
       - name: nfs-config-pvc
         storage: 10Gi
