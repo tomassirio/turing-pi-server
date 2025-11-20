@@ -24,7 +24,7 @@ spec:
               value: "{{ .Values.env.TZ }}"
           volumeMounts:
             - name: config
-              mountPath: /config
+              mountPath: /app/config
               subPath: {{ .Values.persistence.config.subPath }}
       volumes:
         - name: config
