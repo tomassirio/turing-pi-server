@@ -1,0 +1,207 @@
+name: Helm Deploy to Kubernetes
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment (dev, prod)'
+        required: true
+        type: string
+      namespace:
+        description: 'Kubernetes namespace'
+        required: true
+        type: string
+      changed-services:
+        description: 'JSON array of changed services'
+        required: false
+        type: string
+        default: '[]'
+      deploy-all:
+        description: 'Deploy all services regardless of changes'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      TWINGATE_SERVICE_KEY:
+        description: 'Twingate service key for cluster access'
+        required: true
+      KUBECONFIG_CONTENT:
+        description: 'Base64 encoded kubeconfig file'
+        required: true
+      SOPS_AGE_KEY:
+        description: 'SOPS AGE private key for decrypting secrets'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Connect to Twingate
+        uses: twingate/github-action@v1
+        with:
+          service-key: ${{ secrets.TWINGATE_SERVICE_KEY }}
+
+      - name: Setup Kubernetes
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Install SOPS
+        run: |
+          SOPS_VERSION="3.9.0"
+          curl -LO "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64"
+          sudo mv sops-v${SOPS_VERSION}.linux.amd64 /usr/local/bin/sops
+          chmod +x /usr/local/bin/sops
+          sops --version
+
+      - name: Install Helm Secrets Plugin
+        run: |
+          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
+          helm plugin list | grep secrets
+
+      - name: Setup SOPS Age Key
+        run: |
+          mkdir -p ~/.config/sops/age
+          echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
+          chmod 600 ~/.config/sops/age/keys.txt
+          export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+          echo "SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt" >> $GITHUB_ENV
+          echo "Age key setup complete"
+
+      - name: Create namespace
+        run: |
+          # Create namespace if it doesn't exist
+          kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+          echo "✓ Namespace ${{ inputs.namespace }} ready"
+
+      - name: Determine services to deploy
+        id: services
+        run: |
+          CHANGED_SERVICES='${{ inputs.changed-services }}'
+          DEPLOY_ALL=${{ inputs.deploy-all }}
+          
+          if [ "$DEPLOY_ALL" = "true" ]; then
+            echo "Deploying all services..."
+            SERVICES=$(ls -d services/*/ | xargs -n 1 basename | grep -v "archived\|testing" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          elif [ "$CHANGED_SERVICES" != "[]" ] && [ "$CHANGED_SERVICES" != "" ]; then
+            echo "Deploying changed services: $CHANGED_SERVICES"
+            SERVICES="$CHANGED_SERVICES"
+          else
+            echo "No services to deploy"
+            SERVICES="[]"
+          fi
+          
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "Services to deploy: $SERVICES"
+
+      - name: Deploy services
+        run: |
+          SERVICES='${{ steps.services.outputs.services }}'
+          
+          if [ "$SERVICES" = "[]" ]; then
+            echo "No services to deploy"
+            exit 0
+          fi
+          
+          echo "$SERVICES" | jq -r '.[]' | while read -r SERVICE; do
+            echo "================================================"
+            echo "Deploying $SERVICE to ${{ inputs.namespace }}..."
+            echo "================================================"
+            
+            # Handle storage as a special case
+            if [ "$SERVICE" = "storage" ]; then
+              echo "📦 Deploying storage chart..."
+              helm upgrade --install storage ./config/storage \
+                --create-namespace \
+                --wait --timeout 5m
+              
+              echo "✓ Storage deployed successfully"
+              echo ""
+              continue
+            fi
+            
+            SERVICE_PATH="./services/$SERVICE"
+            
+            if [ ! -d "$SERVICE_PATH" ]; then
+              echo "⚠️  Service directory not found: $SERVICE_PATH"
+              continue
+            fi
+            
+            # Prepare Helm arguments
+            HELM_ARGS=(
+              --namespace "${{ inputs.namespace }}"
+              --create-namespace
+              --wait
+              --timeout 5m
+            )
+            
+            # Override ingress host and storage for dev environment
+            if [ "${{ inputs.environment }}" = "dev" ]; then
+              echo "🔧 Setting dev ingress host: ${SERVICE}.localhome-dev.com"
+              HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
+              
+              echo "🔧 Setting dev storage (NFS instead of NAS)"
+              HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
+              HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
+            fi
+            
+            # Check if service has secrets
+            if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
+              echo "🔐 Service has encrypted secrets, using helm secrets..."
+              
+              # Check if release exists
+              if helm list -n "${{ inputs.namespace }}" | grep -q "^${SERVICE}[[:space:]]"; then
+                echo "Release exists, upgrading..."
+                helm secrets upgrade "$SERVICE" "$SERVICE_PATH" \
+                  "${HELM_ARGS[@]}" \
+                  -f "$SERVICE_PATH/secrets.yaml"
+              else
+                echo "Release doesn't exist, installing..."
+                helm secrets install "$SERVICE" "$SERVICE_PATH" \
+                  "${HELM_ARGS[@]}" \
+                  -f "$SERVICE_PATH/secrets.yaml"
+              fi
+            else
+              echo "📦 Deploying service with standard helm..."
+              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
+                "${HELM_ARGS[@]}"
+            fi
+            
+            echo "✓ $SERVICE deployed successfully"
+            echo ""
+          done
+
+      - name: Verify deployment
+        run: |
+          echo "=== Deployments ==="
+          kubectl get deployments -n ${{ inputs.namespace }}
+          
+          echo ""
+          echo "=== Pods ==="
+          kubectl get pods -n ${{ inputs.namespace }}
+          
+          echo ""
+          echo "=== Services ==="
+          kubectl get services -n ${{ inputs.namespace }}
+
+      - name: Display pod logs on failure
+        if: failure()
+        run: |
+          SERVICES='${{ steps.services.outputs.services }}'
+          
+          echo "$SERVICES" | jq -r '.[]' | while read -r SERVICE; do
+            echo "=== $SERVICE logs ==="
+            kubectl logs -l app=$SERVICE -n ${{ inputs.namespace }} --tail=50 || true
+            echo ""
+          done

@@ -1,38 +1,15 @@
-name: Merge to Main
+name: Feature Branch Deploy to Dev
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '**'
+      - '!main'
+    paths:
+      - 'services/**'
+      - '.github/workflows/**'
 
 jobs:
-  update-badge:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Count Services
-        id: count
-        run: |
-          # Count directories only in the services folder
-          if [ -d "./services" ]; then
-            SERVICE_COUNT=$(find ./services -maxdepth 1 -type d -not -path "./services" | wc -l)
-            echo "Services found: $SERVICE_COUNT"
-          else
-            echo "Services folder not found!"
-            SERVICE_COUNT=0
-          fi
-          echo "count=$SERVICE_COUNT" >> $GITHUB_OUTPUT
-
-      - name: Update Badge
-        uses: schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_SECRET }}
-          gistID: 54521673e7feb0e657d92ec385be3851
-          filename: turing-pi-services.json
-          label: Services
-          message: ${{ steps.count.outputs.count }}
-          color: blue
-
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -47,8 +24,13 @@ jobs:
       - name: Detect changed services
         id: changes
         run: |
-          # Compare with the previous commit
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          # Get the list of changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+          else
+            # For push events, compare with the previous commit
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          fi
           
           echo "Changed files:"
           echo "$CHANGED_FILES"
@@ -79,13 +61,13 @@ jobs:
             echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           fi
 
-  deploy-to-production:
+  deploy-to-dev:
     needs: detect-changes
     if: needs.detect-changes.outputs.has-changes == 'true'
     uses: ./.github/workflows/helm-deploy.yaml
     with:
-      environment: prod
-      namespace: default
+      environment: dev
+      namespace: turing-pi-dev
       changed-services: ${{ needs.detect-changes.outputs.changed-services }}
       deploy-all: false
     secrets:

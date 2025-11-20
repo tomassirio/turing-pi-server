@@ -1,0 +1,66 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      services:
+        description: 'Services to deploy (comma-separated, leave empty for all)'
+        required: false
+        type: string
+        default: ''
+      namespace:
+        description: 'Kubernetes namespace (leave empty for default)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  manual-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare deployment parameters
+        id: params
+        run: |
+          # Determine namespace
+          if [ -n "${{ inputs.namespace }}" ]; then
+            NAMESPACE="${{ inputs.namespace }}"
+          elif [ "${{ inputs.environment }}" = "dev" ]; then
+            NAMESPACE="turing-pi-dev"
+          else
+            NAMESPACE="default"
+          fi
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
+          
+          # Determine services
+          if [ -z "${{ inputs.services }}" ]; then
+            # Deploy all services
+            echo "deploy-all=true" >> $GITHUB_OUTPUT
+            echo "changed-services=[]" >> $GITHUB_OUTPUT
+          else
+            # Parse comma-separated services into JSON array
+            SERVICES=$(echo "${{ inputs.services }}" | tr ',' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "deploy-all=false" >> $GITHUB_OUTPUT
+            echo "changed-services=$SERVICES" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy services
+        uses: ./.github/workflows/helm-deploy.yaml
+        with:
+          environment: ${{ inputs.environment }}
+          namespace: ${{ steps.params.outputs.namespace }}
+          changed-services: ${{ steps.params.outputs.changed-services }}
+          deploy-all: ${{ steps.params.outputs.deploy-all }}
+        secrets:
+          TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}

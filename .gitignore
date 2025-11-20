@@ -4,3 +4,8 @@
 .idea
 services/twingate/.env
 services/testing/*
+
+# SOPS - Never commit decrypted secrets
+*.dec.yaml
+*.dec.yml
+*secrets.dec.*
