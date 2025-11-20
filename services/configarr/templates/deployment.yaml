@@ -14,6 +14,25 @@ spec:
       labels:
         app: {{ include "configarr.name" . }}
     spec:
+      initContainers:
+        - name: init-config
+          image: busybox:latest
+          command: ['sh', '-c']
+          args:
+            - |
+              if [ ! -f /app/config/config.yml ]; then
+                echo "Config file not found, copying default config..."
+                cp /default-config/config.yml /app/config/config.yml
+                echo "Default config copied successfully"
+              else
+                echo "Config file already exists, skipping..."
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              subPath: configarr
+            - name: default-config
+              mountPath: /default-config
       containers:
         - name: configarr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -26,7 +45,10 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
       volumes:
+        - name: default-config
+          configMap:
+            name: {{ include "configarr.fullname" . }}-default-config
+      {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "configarr.fullname" . }}-default-config
+  labels:
+    {{- include "configarr.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    # Configarr Configuration
+    # Edit this file at: /app/config/config.yml in the pod
+    # Or directly on the NAS at: /volume1/docker/configarr/config.yml
+    # Documentation: https://github.com/raydak-labs/configarr
+    
+    # Set to true to perform dry run (no actual changes)
+    dryRun: false
+    
+    # Log level: trace, debug, info, warn, error
+    logLevel: info
+    
+    # Configure your Radarr instances
+    # Uncomment and add your API keys
+    # radarr:
+    #   - url: http://radarr.{{ .Release.Namespace }}.svc.cluster.local:7878
+    #     api_key: YOUR_RADARR_API_KEY
+    
+    # Configure your Sonarr instances
+    # sonarr:
+    #   - url: http://sonarr.{{ .Release.Namespace }}.svc.cluster.local:8989
+    #     api_key: YOUR_SONARR_API_KEY
+    
+    # Configure your Lidarr instances
+    # lidarr:
+    #   - url: http://lidarr.{{ .Release.Namespace }}.svc.cluster.local:8686
+    #     api_key: YOUR_LIDARR_API_KEY
+    
+    # Configure your Readarr instances
+    # readarr:
+    #   - url: http://readarr.{{ .Release.Namespace }}.svc.cluster.local:8787
+    #     api_key: YOUR_READARR_API_KEY
+    
+    # Configure your Whisparr instances
+    # whisparr:
+    #   - url: http://whisparr.{{ .Release.Namespace }}.svc.cluster.local:6969
+    #     api_key: YOUR_WHISPARR_API_KEY
