@@ -35,6 +35,8 @@ spec:
         - name: gluetun
           image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
           imagePullPolicy: {{ .Values.vpn.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.vpn.resources | nindent 12 }}
           securityContext: {{ toYaml .Values.vpn.securityContext | nindent 12 }}
           envFrom:
             - secretRef:
