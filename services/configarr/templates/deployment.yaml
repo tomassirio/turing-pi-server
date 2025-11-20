@@ -20,17 +20,24 @@ spec:
           command: ['sh', '-c']
           args:
             - |
+              echo "Checking config directory..."
+              ls -la /app/config/ || echo "Directory doesn't exist yet"
+              
               if [ ! -f /app/config/config.yml ]; then
                 echo "Config file not found, copying default config..."
+                mkdir -p /app/config
                 cp /default-config/config.yml /app/config/config.yml
+                chmod 644 /app/config/config.yml
                 echo "Default config copied successfully"
+                ls -la /app/config/
               else
                 echo "Config file already exists, skipping..."
+                ls -la /app/config/config.yml
               fi
           volumeMounts:
-            - name: config
-              mountPath: /app/config
-              subPath: configarr
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             - name: default-config
               mountPath: /default-config
       containers:
