@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "configarr.fullname" . }}
+  labels:
+    app: {{ include "configarr.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "configarr.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "configarr.name" . }}
+    spec:
+      containers:
+        - name: configarr
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              subPath: {{ .Values.persistence.config.subPath }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
