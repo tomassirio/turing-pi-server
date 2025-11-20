@@ -131,6 +131,10 @@ nfs:
         storage: 1Ti
         accessMode: ReadWriteMany
         path: /mnt/ssd/data
+      - name: nfs-pv-dev
+        storage: 1Ti
+        accessMode: ReadWriteMany
+        path: /mnt/ssd/data-dev
       - name: postgres-dev-pv
         storage: 50Gi
         accessMode: ReadWriteOnce
@@ -146,12 +150,21 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /mnt/ssd/config
+      - name: nfs-config-pv-dev
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        path: /mnt/ssd/config-dev
   pvc:
     data:
       - name: nfs-pvc
         storage: 1Ti
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-pv
+      - name: nfs-pvc
+        storage: 1Ti
+        accessMode: ReadWriteMany
+        persistentVolumeName: nfs-pv-dev
+        namespace: turing-pi-dev
       - name: postgres-dev-pvc
         storage: 50Gi
         accessMode: ReadWriteOnce
@@ -167,6 +180,11 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-config-pv
+      - name: nfs-config-pvc
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: nfs-config-pv-dev
+        namespace: turing-pi-dev
 
 nas:
   pv:

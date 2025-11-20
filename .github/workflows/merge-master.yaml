@@ -61,6 +61,13 @@ jobs:
             sort -u | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
           
+          # Check if storage configuration changed
+          STORAGE_CHANGED=$(echo "$CHANGED_FILES" | grep "^config/storage/" || echo "")
+          if [ -n "$STORAGE_CHANGED" ]; then
+            echo "Storage configuration changed, adding to deployment list"
+            CHANGED_SERVICES=$(echo "$CHANGED_SERVICES" | jq -c '. + ["storage"] | unique')
+          fi
+          
           echo "Changed services: $CHANGED_SERVICES"
           
           # Check if we have any services to deploy
