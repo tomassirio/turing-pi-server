@@ -22,11 +22,11 @@ spec:
           env:
             - name: TZ
               value: "{{ .Values.env.TZ }}"
+          {{- with .Values.volumeMounts }}
           volumeMounts:
-            - name: config
-              mountPath: /app/config
-              subPath: {{ .Values.persistence.config.subPath }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
       volumes:
-        - name: config
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

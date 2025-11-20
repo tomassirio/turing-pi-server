@@ -44,12 +44,6 @@ service:
 
 webuiPort: 5000
 
-persistence:
-  config:
-    enabled: true
-    existingClaim: nas-config-pvc
-    subPath: configarr
-
 ingress:
   enabled: true
   className: nginx
@@ -83,17 +77,16 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+volumeMounts:
+  - name: config
+    mountPath: /app/config
+    subPath: configarr
 
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+volumes:
+  - name: config
+    persistentVolumeClaim:
+      claimName: nas-config-pvc
+
 
 nodeSelector: {}
 
