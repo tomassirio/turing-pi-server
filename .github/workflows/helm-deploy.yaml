@@ -120,20 +120,30 @@ jobs:
               continue
             fi
             
+            # Prepare Helm arguments
+            HELM_ARGS=(
+              --namespace "${{ inputs.namespace }}"
+              --create-namespace
+              --wait
+              --timeout 5m
+            )
+            
+            # Override ingress host for dev environment
+            if [ "${{ inputs.environment }}" = "dev" ]; then
+              echo "🔧 Setting dev ingress host: ${SERVICE}.localhome-dev.com"
+              HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
+            fi
+            
             # Check if service has secrets
             if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
               echo "🔐 Service has encrypted secrets, using helm secrets..."
               helm secrets upgrade -i "$SERVICE" "$SERVICE_PATH" \
-                --namespace ${{ inputs.namespace }} \
-                --create-namespace \
-                -f "$SERVICE_PATH/secrets.yaml" \
-                --wait --timeout 5m
+                "${HELM_ARGS[@]}" \
+                -f "$SERVICE_PATH/secrets.yaml"
             else
               echo "📦 Deploying service with standard helm..."
               helm upgrade -i "$SERVICE" "$SERVICE_PATH" \
-                --namespace ${{ inputs.namespace }} \
-                --create-namespace \
-                --wait --timeout 5m
+                "${HELM_ARGS[@]}"
             fi
             
             echo "✓ $SERVICE deployed successfully"
