@@ -159,12 +159,22 @@ jobs:
             # Check if service has secrets
             if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
               echo "🔐 Service has encrypted secrets, using helm secrets..."
-              helm secrets upgrade -i "$SERVICE" "$SERVICE_PATH" \
-                "${HELM_ARGS[@]}" \
-                -f "$SERVICE_PATH/secrets.yaml"
+              
+              # Check if release exists
+              if helm list -n "${{ inputs.namespace }}" | grep -q "^${SERVICE}[[:space:]]"; then
+                echo "Release exists, upgrading..."
+                helm secrets upgrade "$SERVICE" "$SERVICE_PATH" \
+                  "${HELM_ARGS[@]}" \
+                  -f "$SERVICE_PATH/secrets.yaml"
+              else
+                echo "Release doesn't exist, installing..."
+                helm secrets install "$SERVICE" "$SERVICE_PATH" \
+                  "${HELM_ARGS[@]}" \
+                  -f "$SERVICE_PATH/secrets.yaml"
+              fi
             else
               echo "📦 Deploying service with standard helm..."
-              helm upgrade -i "$SERVICE" "$SERVICE_PATH" \
+              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
                 "${HELM_ARGS[@]}"
             fi
             
