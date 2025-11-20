@@ -68,13 +68,16 @@ jobs:
       - name: Install Helm Secrets Plugin
         run: |
           helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
-          helm secrets --version
+          helm plugin list | grep secrets
 
       - name: Setup SOPS Age Key
         run: |
           mkdir -p ~/.config/sops/age
           echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
           chmod 600 ~/.config/sops/age/keys.txt
+          export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+          echo "SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt" >> $GITHUB_ENV
+          echo "Age key setup complete"
 
       - name: Determine services to deploy
         id: services
