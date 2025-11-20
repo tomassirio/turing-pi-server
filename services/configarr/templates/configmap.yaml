@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "configarr.fullname" . }}-config
+  labels:
+    {{- include "configarr.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    # Configarr Configuration
+    # Documentation: https://github.com/raydak-labs/configarr
+    
+    trashGuideUrl: https://github.com/TRaSH-Guides/Guides
+    recyclarrConfigUrl: https://github.com/recyclarr/config-templates
+
+    # Sonarr Configuration
+    {{- if .Values.config.sonarr.enabled }}
+    sonarr:
+      series:
+        base_url: {{ .Values.config.sonarr.baseUrl }}
+        api_key: !secret SONARR_API_KEY
+
+        quality_definition:
+          type: series
+
+        include:
+          {{- range .Values.config.sonarr.templates }}
+          - template: {{ . }}
+          {{- end }}
+
+        custom_formats: []
+    {{- else }}
+    sonarr: {}
+    {{- end }}
+
+    # Radarr Configuration
+    {{- if .Values.config.radarr.enabled }}
+    radarr:
+      movies:
+        base_url: {{ .Values.config.radarr.baseUrl }}
+        api_key: !secret RADARR_API_KEY
+
+        quality_definition:
+          type: movie
+
+        include:
+          {{- range .Values.config.radarr.templates }}
+          - template: {{ . }}
+          {{- end }}
+
+        custom_formats: []
+    {{- else }}
+    radarr: {}
+    {{- end }}
+
+    # Lidarr Configuration
+    {{- if .Values.config.lidarr.enabled }}
+    lidarr:
+      music:
+        base_url: {{ .Values.config.lidarr.baseUrl }}
+        api_key: !secret LIDARR_API_KEY
+
+        quality_definition:
+          type: music
+
+        include:
+          {{- range .Values.config.lidarr.templates }}
+          - template: {{ . }}
+          {{- end }}
+
+        custom_formats: []
+    {{- else }}
+    lidarr: {}
+    {{- end }}

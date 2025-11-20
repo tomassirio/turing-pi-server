@@ -1,0 +1,65 @@
+# Configarr Helm Chart Values
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/raydak-labs/configarr
+  tag: latest
+  pullPolicy: Always
+
+# CronJob schedule (default: every hour)
+schedule: "0 * * * *"
+trigger: pipelines
+
+# Job history limits
+successfulJobsHistoryLimit: 1
+failedJobsHistoryLimit: 1
+
+# Concurrency policy
+concurrencyPolicy: Forbid
+
+# Restart policy for failed jobs
+restartPolicy: Never
+
+# Environment variables
+env:
+  TZ: "Europe/Amsterdam"
+
+# Persistence configuration
+persistence:
+  repos:
+    # Repository cache storage
+    existingClaim: nas-config-pvc
+    subPath: configarr-repos
+
+# Configuration for *arr services
+# API keys are stored in secrets.yaml (encrypted with SOPS)
+config:
+  # Sonarr configuration
+  sonarr:
+    enabled: true
+    baseUrl: "http://sonarr.default.svc.cluster.local:8989"
+    templates:
+      # Uncomment templates you want to use
+      # - sonarr-quality-definition-series
+      # - sonarr-v4-quality-profile-web-1080p
+      # - sonarr-v4-custom-formats-web-1080p
+
+  # Radarr configuration
+  radarr:
+    enabled: true
+    baseUrl: "http://radarr.default.svc.cluster.local:7878"
+    templates:
+      # Uncomment templates you want to use
+      # - radarr-quality-definition-movie
+      # - radarr-v4-quality-profile-web-1080p
+      # - radarr-v4-custom-formats-web-1080p
+
+  # Lidarr configuration
+  lidarr:
+    enabled: true
+    baseUrl: "http://lidarr.default.svc.cluster.local:8686"
+    templates:
+      # Uncomment templates you want to use
+      # - lidarr-quality-definition-music

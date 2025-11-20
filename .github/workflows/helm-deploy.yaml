@@ -68,16 +68,27 @@ jobs:
       - name: Install Helm Secrets Plugin
         run: |
           helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
+          
+          # Verify installation
           helm plugin list | grep secrets
+          
+          # Test plugin works
+          helm secrets --version || true
 
       - name: Setup SOPS Age Key
         run: |
           mkdir -p ~/.config/sops/age
           echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
           chmod 600 ~/.config/sops/age/keys.txt
-          export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+          
+          # Set environment variables for SOPS
           echo "SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt" >> $GITHUB_ENV
-          echo "Age key setup complete"
+          
+          # Verify SOPS can decrypt
+          echo "Testing SOPS decryption..."
+          if [ -f "services/qbittorrent/secrets.yaml" ]; then
+            sops -d services/qbittorrent/secrets.yaml > /dev/null && echo "✓ SOPS working"
+          fi
 
       - name: Create namespace
         run: |
@@ -152,29 +163,32 @@ jobs:
               HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
               
               echo "🔧 Setting dev storage (NFS instead of NAS)"
+              # Try all common patterns for different services
               HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
               HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
+              HELM_ARGS+=(--set "persistence.repos.existingClaim=nfs-config-pvc")
+              HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
             fi
             
             # Check if service has secrets
             if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
-              echo "🔐 Service has encrypted secrets, using helm secrets..."
+              echo "🔐 Service has encrypted secrets, decrypting with SOPS..."
               
-              # Check if release exists
-              if helm list -n "${{ inputs.namespace }}" | grep -q "^${SERVICE}[[:space:]]"; then
-                echo "Release exists, upgrading..."
-                helm secrets upgrade "$SERVICE" "$SERVICE_PATH" \
-                  "${HELM_ARGS[@]}" \
-                  -f "$SERVICE_PATH/secrets.yaml"
-              else
-                echo "Release doesn't exist, installing..."
-                helm secrets install "$SERVICE" "$SERVICE_PATH" \
-                  "${HELM_ARGS[@]}" \
-                  -f "$SERVICE_PATH/secrets.yaml"
-              fi
+              # Decrypt secrets to temporary file
+              sops -d "$SERVICE_PATH/secrets.yaml" > "$SERVICE_PATH/secrets.dec.yaml"
+              
+              # Deploy with decrypted secrets
+              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
+                --namespace "${{ inputs.namespace }}" \
+                "${HELM_ARGS[@]}" \
+                -f "$SERVICE_PATH/secrets.dec.yaml"
+              
+              # Clean up decrypted file
+              rm -f "$SERVICE_PATH/secrets.dec.yaml"
             else
               echo "📦 Deploying service with standard helm..."
               helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
+                --namespace "${{ inputs.namespace }}" \
                 "${HELM_ARGS[@]}"
             fi
             
@@ -202,6 +216,20 @@ jobs:
           
           echo "$SERVICES" | jq -r '.[]' | while read -r SERVICE; do
             echo "=== $SERVICE logs ==="
-            kubectl logs -l app=$SERVICE -n ${{ inputs.namespace }} --tail=50 || true
+            
+            # Get pod name
+            POD=$(kubectl get pods -l app=$SERVICE -n ${{ inputs.namespace }} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+            
+            if [ -n "$POD" ]; then
+              # Check for init container logs
+              echo "--- Init container logs ---"
+              kubectl logs $POD -n ${{ inputs.namespace }} -c init-config --tail=50 2>/dev/null || echo "No init container or logs not available"
+              
+              echo ""
+              echo "--- Main container logs ---"
+              kubectl logs $POD -n ${{ inputs.namespace }} --tail=50 || true
+            else
+              echo "Pod not found for service: $SERVICE"
+            fi
             echo ""
           done
