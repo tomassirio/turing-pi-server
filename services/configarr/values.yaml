@@ -10,6 +10,7 @@ image:
 
 # CronJob schedule (default: every hour)
 schedule: "0 * * * *"
+trigger: pipeline
 
 # Job history limits
 successfulJobsHistoryLimit: 1
