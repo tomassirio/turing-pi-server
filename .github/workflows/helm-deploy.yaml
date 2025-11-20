@@ -68,16 +68,27 @@ jobs:
       - name: Install Helm Secrets Plugin
         run: |
           helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
+          
+          # Verify installation
           helm plugin list | grep secrets
+          
+          # Test plugin works
+          helm secrets --version || true
 
       - name: Setup SOPS Age Key
         run: |
           mkdir -p ~/.config/sops/age
           echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
           chmod 600 ~/.config/sops/age/keys.txt
-          export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+          
+          # Set environment variables for SOPS
           echo "SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt" >> $GITHUB_ENV
-          echo "Age key setup complete"
+          
+          # Verify SOPS can decrypt
+          echo "Testing SOPS decryption..."
+          if [ -f "services/qbittorrent/secrets.yaml" ]; then
+            sops -d services/qbittorrent/secrets.yaml > /dev/null && echo "✓ SOPS working"
+          fi
 
       - name: Create namespace
         run: |
@@ -161,11 +172,19 @@ jobs:
             
             # Check if service has secrets
             if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
-              echo "🔐 Service has encrypted secrets, using helm secrets..."
-              helm secrets upgrade --install "$SERVICE" "$SERVICE_PATH" \
+              echo "🔐 Service has encrypted secrets, decrypting with SOPS..."
+              
+              # Decrypt secrets to temporary file
+              sops -d "$SERVICE_PATH/secrets.yaml" > "$SERVICE_PATH/secrets.dec.yaml"
+              
+              # Deploy with decrypted secrets
+              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
                 --namespace "${{ inputs.namespace }}" \
                 "${HELM_ARGS[@]}" \
-                -f "$SERVICE_PATH/secrets.yaml"
+                -f "$SERVICE_PATH/secrets.dec.yaml"
+              
+              # Clean up decrypted file
+              rm -f "$SERVICE_PATH/secrets.dec.yaml"
             else
               echo "📦 Deploying service with standard helm..."
               helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
