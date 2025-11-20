@@ -1,95 +1,64 @@
-replicaCount: 1
+# Configarr Helm Chart Values
+
+nameOverride: ""
+fullnameOverride: ""
 
 image:
   repository: ghcr.io/raydak-labs/configarr
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+# CronJob schedule (default: every hour)
+schedule: "0 * * * *"
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
+# Job history limits
+successfulJobsHistoryLimit: 1
+failedJobsHistoryLimit: 1
 
-podSecurityContext: {}
-  # fsGroup: 2000
+# Concurrency policy
+concurrencyPolicy: Forbid
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# Restart policy for failed jobs
+restartPolicy: Never
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
-service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
-
-webuiPort: 5000
-
-ingress:
-  enabled: true
-  className: nginx
-  host: configarr.localhome.com
-
+# Environment variables
 env:
   TZ: "Europe/Amsterdam"
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-#   memory: 128Mi
+# Persistence configuration
+persistence:
+  repos:
+    # Repository cache storage
+    existingClaim: nas-config-pvc
+    subPath: configarr-repos
 
-# Configarr runs as a cron job, not a long-running service, so we disable probes
-livenessProbe: {}
-readinessProbe: {}
+# Configuration for *arr services
+# API keys are stored in secrets.yaml (encrypted with SOPS)
+config:
+  # Sonarr configuration
+  sonarr:
+    enabled: true
+    baseUrl: "http://sonarr.default.svc.cluster.local:8989"
+    templates:
+      # Uncomment templates you want to use
+      # - sonarr-quality-definition-series
+      # - sonarr-v4-quality-profile-web-1080p
+      # - sonarr-v4-custom-formats-web-1080p
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  # Radarr configuration
+  radarr:
+    enabled: true
+    baseUrl: "http://radarr.default.svc.cluster.local:7878"
+    templates:
+      # Uncomment templates you want to use
+      # - radarr-quality-definition-movie
+      # - radarr-v4-quality-profile-web-1080p
+      # - radarr-v4-custom-formats-web-1080p
 
-# Additional volumes on the output Deployment definition.
-volumeMounts:
-  - name: config
-    mountPath: /app/config
-    subPath: configarr
-
-volumes:
-  - name: config
-    persistentVolumeClaim:
-      claimName: nas-config-pvc
-
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+  # Lidarr configuration
+  lidarr:
+    enabled: true
+    baseUrl: "http://lidarr.default.svc.cluster.local:8686"
+    templates:
+      # Uncomment templates you want to use
+      # - lidarr-quality-definition-music

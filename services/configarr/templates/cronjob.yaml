@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "configarr.fullname" . }}
+  labels:
+    {{- include "configarr.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  concurrencyPolicy: {{ .Values.concurrencyPolicy }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "configarr.selectorLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: {{ .Values.restartPolicy }}
+          containers:
+            - name: configarr
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              tty: true
+              env:
+                - name: TZ
+                  value: {{ .Values.env.TZ | quote }}
+              volumeMounts:
+                # Cache repositories
+                - name: repos
+                  mountPath: /app/repos
+                  {{- if .Values.persistence.repos.subPath }}
+                  subPath: {{ .Values.persistence.repos.subPath }}
+                  {{- end }}
+                # Main config file
+                - name: config-volume
+                  mountPath: /app/config/config.yml
+                  subPath: config.yml
+                # Secrets file
+                - name: secret-volume
+                  mountPath: /app/config/secrets.yml
+                  subPath: secrets.yml
+          volumes:
+            # Repository cache volume
+            - name: repos
+              persistentVolumeClaim:
+                claimName: {{ .Values.persistence.repos.existingClaim }}
+            # Config from ConfigMap
+            - name: config-volume
+              configMap:
+                name: {{ include "configarr.fullname" . }}-config
+            # Secrets from Secret
+            - name: secret-volume
+              secret:
+                secretName: {{ include "configarr.fullname" . }}-secret
