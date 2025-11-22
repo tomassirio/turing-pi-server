@@ -22,12 +22,13 @@ on:
         default: ''
 
 jobs:
-  manual-deploy:
+  prepare-params:
     runs-on: ubuntu-latest
+    outputs:
+      namespace: ${{ steps.params.outputs.namespace }}
+      changed-services: ${{ steps.params.outputs.changed-services }}
+      deploy-all: ${{ steps.params.outputs.deploy-all }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Prepare deployment parameters
         id: params
         run: |
@@ -53,14 +54,15 @@ jobs:
             echo "changed-services=$SERVICES" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy services
-        uses: ./.github/workflows/helm-deploy.yaml
-        with:
-          environment: ${{ inputs.environment }}
-          namespace: ${{ steps.params.outputs.namespace }}
-          changed-services: ${{ steps.params.outputs.changed-services }}
-          deploy-all: ${{ steps.params.outputs.deploy-all }}
-        secrets:
-          TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
-          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
-          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+  deploy:
+    needs: prepare-params
+    uses: ./.github/workflows/helm-deploy.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      namespace: ${{ needs.prepare-params.outputs.namespace }}
+      changed-services: ${{ needs.prepare-params.outputs.changed-services }}
+      deploy-all: ${{ needs.prepare-params.outputs.deploy-all == 'true' }}
+    secrets:
+      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
+      KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}

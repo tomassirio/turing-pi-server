@@ -50,8 +50,17 @@ persistence:
     existingClaim: nas-pvc
   config:
     enabled: true
+    type: emptyDir
+  restore:
+    enabled: true
     existingClaim: nas-config-pvc
-    subPath: prowlarr
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
 
 ingress:
   enabled: true

@@ -30,6 +30,8 @@ spec:
       serviceAccountName: {{ include "huntarr.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "huntarr" "ConfigPath" "/config") | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -43,20 +45,48 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-{{/*          livenessProbe:*/}}
-{{/*            {{- toYaml .Values.livenessProbe | nindent 12 }}*/}}
-{{/*          readinessProbe:*/}}
-{{/*            {{- toYaml .Values.readinessProbe | nindent 12 }}*/}}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "huntarr" "ConfigPath" "/config") | nindent 8 }}
+      {{- if .Values.additionalContainers }}
+        {{- toYaml .Values.additionalContainers | nindent 8 }}
+      {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
