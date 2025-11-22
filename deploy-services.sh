@@ -23,8 +23,8 @@ ${NC}"
 for serviceFolder in "$SERVICES_DIR"/*/; do
   serviceName=$(basename "$serviceFolder")
 
-  # Exclude archived and testing directories
-  if [ "$serviceName" == "archived" ] || [ "$serviceName" == "testing" ]; then
+  # Exclude archived, testing, and library charts
+  if [ "$serviceName" == "archived" ] || [ "$serviceName" == "testing" ] || [ "$serviceName" == "common" ]; then
     echo -e "${YELLOW}⏭️  Skipping $serviceName...${NC}"
     continue
   fi
