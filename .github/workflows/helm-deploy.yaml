@@ -104,7 +104,7 @@ jobs:
           
           if [ "$DEPLOY_ALL" = "true" ]; then
             echo "Deploying all services..."
-            SERVICES=$(ls -d services/*/ | xargs -n 1 basename | grep -v "archived\|testing" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            SERVICES=$(ls -d services/*/ | xargs -n 1 basename | grep -v "archived\|testing\|common" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           elif [ "$CHANGED_SERVICES" != "[]" ] && [ "$CHANGED_SERVICES" != "" ]; then
             echo "Deploying changed services: $CHANGED_SERVICES"
             SERVICES="$CHANGED_SERVICES"
