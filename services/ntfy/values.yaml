@@ -1,0 +1,40 @@
+# Default values for ntfy.
+replicaCount: 1
+
+image:
+  repository: binwiederhier/ntfy
+  tag: v2.15.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: ntfy.localhome.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+persistence:
+  cache:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /var/cache/ntfy
+  config:
+    enabled: true
+    mountPath: /etc/ntfy
+
+env:
+  TZ: "Europe/Amsterdam"
+
+resources: {}
+
+serviceAccount:
+  create: true
+  automount: true
+  name: ""
+
+podSecurityContext: {}
+securityContext: {}
