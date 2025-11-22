@@ -170,6 +170,10 @@ jobs:
               HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
             fi
             
+            # Update dependencies
+            echo "📦 Updating Helm dependencies..."
+            helm dependency update --skip-refresh "$SERVICE_PATH"
+
             # Check if service has secrets
             if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
               echo "🔐 Service has encrypted secrets, decrypting with SOPS..."

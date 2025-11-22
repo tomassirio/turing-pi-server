@@ -98,18 +98,32 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# Persistence configuration
+persistence:
+  config:
+    enabled: true
+    type: emptyDir
+  restore:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
+
 # Additional volumes on the output Deployment definition.
 volumeMounts:
   - name: config
     mountPath: /app/config
-    subPath: jellyseerr
   - name: data
     mountPath: /data
 
 volumes:
   - name: config
-    persistentVolumeClaim:
-      claimName: nas-config-pvc
+    emptyDir: {}
   - name: data
     persistentVolumeClaim:
       claimName: nas-pvc

@@ -31,6 +31,9 @@ for serviceFolder in "$SERVICES_DIR"/*/; do
 
   echo -e "${BLUE}🚢  Deploying $serviceName...${NC}"
 
+  echo -e "${BLUE}📦  Updating dependencies for $serviceName...${NC}"
+  helm dependency update --skip-refresh "$serviceFolder"
+
   if [ -f "$serviceFolder/secrets.yaml" ]; then
     echo -e "${YELLOW}🤫  Found secrets.yaml, deploying with sops...${NC}"
     helm secrets upgrade -i "$serviceName" "$serviceFolder" -f "$serviceFolder/secrets.yaml"
