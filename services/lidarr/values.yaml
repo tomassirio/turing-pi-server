@@ -95,7 +95,7 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /
-    port: http
+    port: target
   initialDelaySeconds: 10
   timeoutSeconds: 5
   periodSeconds: 10
@@ -104,7 +104,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /
-    port: http
+    port: target
   initialDelaySeconds: 10
   timeoutSeconds: 5
   periodSeconds: 10
@@ -133,6 +133,28 @@ persistence:
     existingClaim: nas-config-pvc
     mountPath: /backup-dest
     readOnly: false
+
+additionalContainers:
+  - name: exportarr
+    image: ghcr.io/onedr0p/exportarr:v1.5.3
+    imagePullPolicy: IfNotPresent
+    args: ["lidarr"]
+    env:
+      - name: PORT
+        value: "9794"
+      - name: URL
+        value: "http://localhost:8686"
+      - name: CONFIG
+        value: "/config/config.xml"
+      - name: ENABLE_ADDITIONAL_METRICS
+        value: "true"
+    ports:
+      - name: metrics
+        containerPort: 9794
+    volumeMounts:
+      - name: config
+        mountPath: /config
+        readOnly: true
 
 # Additional volumes on the output Deployment definition.
 volumeMounts:

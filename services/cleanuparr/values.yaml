@@ -89,20 +89,20 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /health
-    port: 11011
-  initialDelaySeconds: 10
+    port: http
+  initialDelaySeconds: 30
   timeoutSeconds: 5
   periodSeconds: 10
-  failureThreshold: 3
+  failureThreshold: 5
 
 readinessProbe:
   httpGet:
     path: /health
-    port: 11011
-  initialDelaySeconds: 10
+    port: http
+  initialDelaySeconds: 30
   timeoutSeconds: 5
   periodSeconds: 10
-  failureThreshold: 3
+  failureThreshold: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
