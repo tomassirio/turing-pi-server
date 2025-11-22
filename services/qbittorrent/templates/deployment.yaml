@@ -11,6 +11,10 @@ spec:
       app: {{ include "qbittorrent.name" . }}
   template:
     metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         app: {{ include "qbittorrent.name" . }}
     spec:
@@ -55,6 +59,9 @@ spec:
             - name: HEALTH_TARGET_ADDRESS
               value: {{ .Values.vpn.healthTargetAddress | quote }}
         {{- end }}
+      {{- if .Values.additionalContainers }}
+        {{- toYaml .Values.additionalContainers | nindent 8 }}
+      {{- end }}
       volumes:
         - name: root
           persistentVolumeClaim:

@@ -25,7 +25,29 @@ serviceAccount:
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9091"
+  prometheus.io/path: "/metrics"
+
+additionalContainers:
+  - name: exporter
+    image: ghcr.io/esanchezm/prometheus-qbittorrent-exporter:latest
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: QBITTORRENT_HOST
+        value: "localhost"
+      - name: QBITTORRENT_PORT
+        value: "8080"
+      - name: QBITTORRENT_USER
+        value: "admin"
+      - name: QBITTORRENT_PASS
+        value: "adminadmin"
+      - name: EXPORTER_PORT
+        value: "9091"
+    ports:
+      - name: metrics
+        containerPort: 9091
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -110,6 +132,7 @@ vpn:
     tag: latest
     pullPolicy: IfNotPresent
   securityContext:
+    capabilities:
       add:
         - NET_ADMIN
   resources:
