@@ -166,6 +166,8 @@ jobs:
               # Try all common patterns for different services
               HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
               HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
+              HELM_ARGS+=(--set "persistence.restore.existingClaim=nfs-config-pvc")
+              HELM_ARGS+=(--set "persistence.backup.existingClaim=nfs-config-pvc")
               HELM_ARGS+=(--set "persistence.repos.existingClaim=nfs-config-pvc")
               HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
             fi

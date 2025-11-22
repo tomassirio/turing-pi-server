@@ -14,7 +14,7 @@ service:
   port: 80
 
 webuiPort: 7878
-trigger: pipeline
+trigger: pipelines
 
 persistence:
   data:
