@@ -11,10 +11,6 @@ spec:
       app: {{ include "prowlarr.name" . }}
   template:
     metadata:
-      annotations:
-        {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
       labels:
         app: {{ include "prowlarr.name" . }}
     spec:
@@ -50,9 +46,6 @@ spec:
               {{- end }}
             {{- end }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "prowlarr" "ConfigPath" "/config") | nindent 8 }}
-      {{- if .Values.additionalContainers }}
-        {{- toYaml .Values.additionalContainers | nindent 8 }}
-      {{- end }}
       volumes:
         - name: data
           persistentVolumeClaim:
