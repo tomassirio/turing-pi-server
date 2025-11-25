@@ -73,9 +73,12 @@ podAnnotations:
 
 additionalContainers:
   - name: exportarr
-    image: ghcr.io/onedr0p/exportarr:v1.5.3
+    image: ghcr.io/onedr0p/exportarr:latest
     imagePullPolicy: IfNotPresent
     args: ["sonarr"]
+    securityContext:
+      runAsUser: 911
+      runAsGroup: 911
     env:
       - name: PORT
         value: "9794"
