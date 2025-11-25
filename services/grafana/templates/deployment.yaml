@@ -54,10 +54,19 @@ spec:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: storage
+              mountPath: /var/lib/grafana
+            {{- end }}
       volumes:
         - name: datasources
           configMap:
             name: {{ include "grafana.fullname" . }}-datasources
+        {{- if .Values.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{ else }}{{ include "grafana.fullname" . }}{{ end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -20,6 +20,14 @@ podLabels: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
+persistence:
+  enabled: true
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  # existingClaim: "my-existing-claim"
+
 securityContext: {}
   # capabilities:
   #   drop:

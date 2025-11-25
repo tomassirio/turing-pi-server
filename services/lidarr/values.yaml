@@ -134,27 +134,7 @@ persistence:
     mountPath: /backup-dest
     readOnly: false
 
-additionalContainers:
-  - name: exportarr
-    image: ghcr.io/onedr0p/exportarr:v1.5.3
-    imagePullPolicy: IfNotPresent
-    args: ["lidarr"]
-    env:
-      - name: PORT
-        value: "9794"
-      - name: URL
-        value: "http://localhost:8686"
-      - name: CONFIG
-        value: "/config/config.xml"
-      - name: ENABLE_ADDITIONAL_METRICS
-        value: "true"
-    ports:
-      - name: metrics
-        containerPort: 9794
-    volumeMounts:
-      - name: config
-        mountPath: /config
-        readOnly: true
+
 
 # Additional volumes on the output Deployment definition.
 volumeMounts:

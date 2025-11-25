@@ -23,7 +23,8 @@ Params:
         # -a: archive mode (preserves permissions, times, etc.)
         # -v: verbose
         # --delete: delete extraneous files from dest dirs
-        rsync -av --delete /restore-source/{{ $appName }}/ {{ $configPath }}/
+        # --no-o --no-g: don't try to preserve owner/group (avoids permission errors)
+        rsync -av --delete --no-o --no-g /restore-source/{{ $appName }}/ {{ $configPath }}/
         echo "Restore complete."
       else
         echo "No backup found at /restore-source/{{ $appName }}, starting fresh."
@@ -53,24 +54,32 @@ Params:
   args:
     - |
       echo "Starting backup scheduler..."
-      apk add --no-cache coreutils rsync
+      apk add --no-cache rsync
       while true; do
         current_time=$(date +%s)
-        target_today=$(date -d "today 02:00" +%s)
-        if [ $current_time -lt $target_today ]; then
-          next_run=$target_today
+        current_hour=$(date +%H)
+        current_min=$(date +%M)
+        current_sec=$(date +%S)
+        
+        # Calculate seconds until 2 AM
+        seconds_since_2am=$(( (current_hour - 2) * 3600 + current_min * 60 + current_sec ))
+        
+        if [ $seconds_since_2am -lt 0 ]; then
+          # It's before 2 AM today, wait until 2 AM today
+          sleep_seconds=$(( -seconds_since_2am ))
         else
-          next_run=$(date -d "tomorrow 02:00" +%s)
+          # It's after 2 AM, wait until 2 AM tomorrow
+          sleep_seconds=$(( 86400 - seconds_since_2am ))
         fi
         
-        sleep_seconds=$((next_run - current_time))
         echo "Sleeping for $sleep_seconds seconds until 2 AM..."
         sleep $sleep_seconds
         
         echo "Starting backup..."
         mkdir -p /backup-dest/{{ $appName }}
         # Sync from config to backup
-        rsync -av --delete {{ $configPath }}/ /backup-dest/{{ $appName }}/
+        # --no-o --no-g: don't try to preserve owner/group (avoids permission errors on NAS)
+        rsync -av --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/
         echo "Backup completed at $(date)"
         sleep 60
       done
