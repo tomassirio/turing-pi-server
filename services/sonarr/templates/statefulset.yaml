@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "sonarr.fullname" . }}
+  labels:
+    app: {{ include "sonarr.name" . }}
+spec:
+  serviceName: {{ include "sonarr.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "sonarr.name" . }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "sonarr.name" . }}
+    spec:
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "sonarr" "ConfigPath" "/config") | nindent 8 }}
+      containers:
+        - name: sonarr
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+              {{- if and .Values.persistence.config.subPath (not (eq .Values.persistence.config.type "emptyDir")) }}
+              subPath: {{ .Values.persistence.config.subPath }}
+              {{- end }}
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "sonarr" "ConfigPath" "/config") | nindent 8 }}
+      {{- if .Values.additionalContainers }}
+        {{- toYaml .Values.additionalContainers | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.data.existingClaim }}
+        - name: config
+        {{- if eq .Values.persistence.config.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}

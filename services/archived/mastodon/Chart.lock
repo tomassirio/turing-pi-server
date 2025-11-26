@@ -1,6 +1,0 @@
-dependencies:
-- name: mastodon
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 13.0.6
-digest: sha256:0cdb942065eec81248c442fc134b37c7fdcb9ae9008a275a5a86deaf56f08f3d
-generated: "2025-07-13T13:16:45.515658+02:00"

@@ -360,7 +360,7 @@ spec:
 Then we deploy all of them using `kubectl`:
 
 ```bash
-kubectl apply -f sonarr/deployment.yaml
+kubectl apply -f sonarr/statefulset.yaml
 kubectl apply -f sonarr/service.yaml
 kubectl apply -f sonarr/ingress.yaml
 ```
