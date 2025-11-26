@@ -38,4 +38,3 @@ serviceAccount:
 
 podSecurityContext: {}
 securityContext: {}
-trigger: pipeline

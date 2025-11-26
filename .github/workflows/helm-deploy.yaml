@@ -33,9 +33,44 @@ on:
         required: true
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-services.outputs.services }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine services to deploy
+        id: set-services
+        run: |
+          CHANGED_SERVICES='${{ inputs.changed-services }}'
+          DEPLOY_ALL=${{ inputs.deploy-all }}
+          
+          if [ "$DEPLOY_ALL" = "true" ]; then
+            echo "Deploying all services..."
+            # Get all services from the services directory, excluding archived, testing, and common
+            SERVICES=$(ls -d services/*/ | xargs -n 1 basename | grep -v "archived\|testing\|common" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          elif [ "$CHANGED_SERVICES" != "[]" ] && [ "$CHANGED_SERVICES" != "" ]; then
+            echo "Deploying changed services: $CHANGED_SERVICES"
+            SERVICES="$CHANGED_SERVICES"
+          else
+            echo "No services to deploy"
+            SERVICES="[]"
+          fi
+          
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "Services to deploy: $SERVICES"
+
   deploy:
+    needs: prepare
+    if: needs.prepare.outputs.services != '[]' && needs.prepare.outputs.services != ''
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.prepare.outputs.services) }}
     
     steps:
       - name: Checkout code
@@ -96,147 +131,104 @@ jobs:
           kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
           echo "✓ Namespace ${{ inputs.namespace }} ready"
 
-      - name: Determine services to deploy
-        id: services
+      - name: Deploy ${{ matrix.service }}
         run: |
-          CHANGED_SERVICES='${{ inputs.changed-services }}'
-          DEPLOY_ALL=${{ inputs.deploy-all }}
+          SERVICE="${{ matrix.service }}"
           
-          if [ "$DEPLOY_ALL" = "true" ]; then
-            echo "Deploying all services..."
-            SERVICES=$(ls -d services/*/ | xargs -n 1 basename | grep -v "archived\|testing\|common" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          elif [ "$CHANGED_SERVICES" != "[]" ] && [ "$CHANGED_SERVICES" != "" ]; then
-            echo "Deploying changed services: $CHANGED_SERVICES"
-            SERVICES="$CHANGED_SERVICES"
-          else
-            echo "No services to deploy"
-            SERVICES="[]"
-          fi
+          echo "================================================"
+          echo "Deploying $SERVICE to ${{ inputs.namespace }}..."
+          echo "================================================"
           
-          echo "services=$SERVICES" >> $GITHUB_OUTPUT
-          echo "Services to deploy: $SERVICES"
-
-      - name: Deploy services
-        run: |
-          SERVICES='${{ steps.services.outputs.services }}'
-          
-          if [ "$SERVICES" = "[]" ]; then
-            echo "No services to deploy"
+          # Handle storage as a special case
+          if [ "$SERVICE" = "storage" ]; then
+            echo "📦 Deploying storage chart..."
+            helm upgrade --install storage ./config/storage \
+              --create-namespace \
+              --wait --timeout 5m
+            
+            echo "✓ Storage deployed successfully"
             exit 0
           fi
           
-          echo "$SERVICES" | jq -r '.[]' | while read -r SERVICE; do
-            echo "================================================"
-            echo "Deploying $SERVICE to ${{ inputs.namespace }}..."
-            echo "================================================"
-            
-            # Handle storage as a special case
-            if [ "$SERVICE" = "storage" ]; then
-              echo "📦 Deploying storage chart..."
-              helm upgrade --install storage ./config/storage \
-                --create-namespace \
-                --wait --timeout 5m
-              
-              echo "✓ Storage deployed successfully"
-              echo ""
-              continue
-            fi
-            
-            SERVICE_PATH="./services/$SERVICE"
-            
-            if [ ! -d "$SERVICE_PATH" ]; then
-              echo "⚠️  Service directory not found: $SERVICE_PATH"
-              continue
-            fi
-            
-            # Prepare Helm arguments
-            HELM_ARGS=(
-              --namespace "${{ inputs.namespace }}"
-              --create-namespace
-              --wait
-              --timeout 5m
-            )
-            
-            # Override ingress host and storage for dev environment
-            if [ "${{ inputs.environment }}" = "dev" ]; then
-              echo "🔧 Setting dev ingress host: ${SERVICE}.localhome-dev.com"
-              HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
-              
-              echo "🔧 Setting dev storage (NFS instead of NAS)"
-              # Try all common patterns for different services
-              HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
-              HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
-              HELM_ARGS+=(--set "persistence.restore.existingClaim=nfs-config-pvc")
-              HELM_ARGS+=(--set "persistence.backup.existingClaim=nfs-config-pvc")
-              HELM_ARGS+=(--set "persistence.cache.existingClaim=nfs-config-pvc")
-              HELM_ARGS+=(--set "persistence.repos.existingClaim=nfs-config-pvc")
-              HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
-            fi
-            
-            # Update dependencies
-            echo "📦 Updating Helm dependencies..."
-            helm dependency update --skip-refresh "$SERVICE_PATH"
-
-            # Check if service has secrets
-            if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
-              echo "🔐 Service has encrypted secrets, decrypting with SOPS..."
-              
-              # Decrypt secrets to temporary file
-              sops -d "$SERVICE_PATH/secrets.yaml" > "$SERVICE_PATH/secrets.dec.yaml"
-              
-              # Deploy with decrypted secrets
-              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
-                --namespace "${{ inputs.namespace }}" \
-                "${HELM_ARGS[@]}" \
-                -f "$SERVICE_PATH/secrets.dec.yaml"
-              
-              # Clean up decrypted file
-              rm -f "$SERVICE_PATH/secrets.dec.yaml"
-            else
-              echo "📦 Deploying service with standard helm..."
-              helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
-                --namespace "${{ inputs.namespace }}" \
-                "${HELM_ARGS[@]}"
-            fi
-            
-            echo "✓ $SERVICE deployed successfully"
-            echo ""
-          done
-
-      - name: Verify deployment
-        run: |
-          echo "=== Deployments ==="
-          kubectl get deployments -n ${{ inputs.namespace }}
+          SERVICE_PATH="./services/$SERVICE"
           
-          echo ""
-          echo "=== Pods ==="
-          kubectl get pods -n ${{ inputs.namespace }}
+          if [ ! -d "$SERVICE_PATH" ]; then
+            echo "⚠️  Service directory not found: $SERVICE_PATH"
+            exit 0
+          fi
           
-          echo ""
-          echo "=== Services ==="
-          kubectl get services -n ${{ inputs.namespace }}
+          # Prepare Helm arguments
+          HELM_ARGS=(
+            --namespace "${{ inputs.namespace }}"
+            --create-namespace
+            --wait
+            --timeout 5m
+          )
+          
+          # Override ingress host and storage for dev environment
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            echo "🔧 Setting dev ingress host: ${SERVICE}.localhome-dev.com"
+            HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
+            HELM_ARGS+=(--set "ingress.hosts[0].host=${SERVICE}.localhome-dev.com")
+            HELM_ARGS+=(--set "ingress.hosts[0].paths[0].path=/")
+            HELM_ARGS+=(--set "ingress.hosts[0].paths[0].pathType=ImplementationSpecific")
+            
+            echo "🔧 Setting dev storage (NFS instead of NAS)"
+            # Try all common patterns for different services
+            HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
+            HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
+            HELM_ARGS+=(--set "persistence.restore.existingClaim=nfs-config-pvc")
+            HELM_ARGS+=(--set "persistence.backup.existingClaim=nfs-config-pvc")
+            HELM_ARGS+=(--set "persistence.cache.existingClaim=nfs-config-pvc")
+            HELM_ARGS+=(--set "persistence.repos.existingClaim=nfs-config-pvc")
+            HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
+          fi
+          
+          # Update dependencies
+          echo "📦 Updating Helm dependencies..."
+          helm dependency update --skip-refresh "$SERVICE_PATH"
+
+          # Check if service has secrets
+          if [ -f "$SERVICE_PATH/secrets.yaml" ]; then
+            echo "🔐 Service has encrypted secrets, decrypting with SOPS..."
+            
+            # Decrypt secrets to temporary file
+            sops -d "$SERVICE_PATH/secrets.yaml" > "$SERVICE_PATH/secrets.dec.yaml"
+            
+            # Deploy with decrypted secrets
+            helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
+              --namespace "${{ inputs.namespace }}" \
+              "${HELM_ARGS[@]}" \
+              -f "$SERVICE_PATH/secrets.dec.yaml"
+            
+            # Clean up decrypted file
+            rm -f "$SERVICE_PATH/secrets.dec.yaml"
+          else
+            echo "📦 Deploying service with standard helm..."
+            helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
+              --namespace "${{ inputs.namespace }}" \
+              "${HELM_ARGS[@]}"
+          fi
+          
+          echo "✓ $SERVICE deployed successfully"
 
       - name: Display pod logs on failure
         if: failure()
         run: |
-          SERVICES='${{ steps.services.outputs.services }}'
+          SERVICE="${{ matrix.service }}"
+          echo "=== $SERVICE logs ==="
           
-          echo "$SERVICES" | jq -r '.[]' | while read -r SERVICE; do
-            echo "=== $SERVICE logs ==="
+          # Get pod name
+          POD=$(kubectl get pods -l app=$SERVICE -n ${{ inputs.namespace }} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          
+          if [ -n "$POD" ]; then
+            # Check for init container logs
+            echo "--- Init container logs ---"
+            kubectl logs $POD -n ${{ inputs.namespace }} -c init-config --tail=50 2>/dev/null || echo "No init container or logs not available"
             
-            # Get pod name
-            POD=$(kubectl get pods -l app=$SERVICE -n ${{ inputs.namespace }} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
-            
-            if [ -n "$POD" ]; then
-              # Check for init container logs
-              echo "--- Init container logs ---"
-              kubectl logs $POD -n ${{ inputs.namespace }} -c init-config --tail=50 2>/dev/null || echo "No init container or logs not available"
-              
-              echo ""
-              echo "--- Main container logs ---"
-              kubectl logs $POD -n ${{ inputs.namespace }} --tail=50 || true
-            else
-              echo "Pod not found for service: $SERVICE"
-            fi
             echo ""
-          done
+            echo "--- Main container logs ---"
+            kubectl logs $POD -n ${{ inputs.namespace }} --tail=50 || true
+          else
+            echo "Pod not found for service: $SERVICE"
+          fi
