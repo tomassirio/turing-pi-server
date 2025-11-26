@@ -67,7 +67,7 @@ jobs:
 
       - name: Install Helm Secrets Plugin
         run: |
-          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
+          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.7.0 --verify=false
           
           # Verify installation
           helm plugin list | grep secrets

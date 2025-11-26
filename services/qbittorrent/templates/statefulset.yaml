@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}
+  labels:
+    app: {{ include "qbittorrent.name" . }}
+spec:
+  serviceName: {{ include "qbittorrent.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "qbittorrent.name" . }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "qbittorrent.name" . }}
+    spec:
+      containers:
+        - name: qbittorrent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+            - containerPort: {{ .Values.torrentPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+          volumeMounts:
+            - name: root
+              mountPath: /data
+            - name: config
+              mountPath: /config
+        {{- if .Values.vpn.enabled }}
+        - name: gluetun
+          image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
+          imagePullPolicy: {{ .Values.vpn.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.vpn.resources | nindent 12 }}
+          securityContext: {{ toYaml .Values.vpn.securityContext | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.vpn.secretName }}
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: {{ .Values.vpn.provider }}
+            - name: VPN_TYPE
+              value: {{ .Values.vpn.type }}
+            - name: SERVER_COUNTRIES
+              value: {{ .Values.vpn.countries }}
+            - name: DOT
+              value: {{ .Values.vpn.dot | quote }}
+            - name: DNS_ADDRESS
+              value: {{ .Values.vpn.dnsAddress | quote }}
+            - name: HEALTH_TARGET_ADDRESS
+              value: {{ .Values.vpn.healthTargetAddress | quote }}
+        {{- end }}
+      {{- if .Values.additionalContainers }}
+        {{- toYaml .Values.additionalContainers | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.root.existingClaim }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+
