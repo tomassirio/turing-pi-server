@@ -171,6 +171,7 @@ jobs:
             HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
             HELM_ARGS+=(--set "ingress.hosts[0].host=${SERVICE}.localhome-dev.com")
             HELM_ARGS+=(--set "ingress.hosts[0].paths[0].path=/")
+            HELM_ARGS+=(--set "ingress.hosts[0].paths[0].pathType=ImplementationSpecific")
             
             echo "🔧 Setting dev storage (NFS instead of NAS)"
             # Try all common patterns for different services
