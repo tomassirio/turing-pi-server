@@ -150,6 +150,18 @@ jobs:
             echo "✓ Storage deployed successfully"
             exit 0
           fi
+
+          # Handle cluster-secrets as a special case
+          if [ "$SERVICE" = "cluster-secrets" ]; then
+            echo "🔐 Deploying cluster-secrets chart..."
+            helm secrets upgrade --install cluster-secrets ./config/secrets \
+              --create-namespace \
+              --wait --timeout 5m \
+              -f ./config/secrets/secrets.yaml
+            
+            echo "✓ Cluster secrets deployed successfully"
+            exit 0
+          fi
           
           SERVICE_PATH="./services/$SERVICE"
           

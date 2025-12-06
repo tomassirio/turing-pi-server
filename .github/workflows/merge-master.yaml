@@ -33,7 +33,7 @@ jobs:
           message: ${{ steps.count.outputs.count }}
           color: blue
 
-  detect-changes:
+  detect-services:
     runs-on: ubuntu-latest
     outputs:
       changed-services: ${{ steps.changes.outputs.services }}
@@ -50,9 +50,6 @@ jobs:
           # Compare with the previous commit
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
           
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-          
           # Extract unique service names from changed files in services/ directory
           CHANGED_SERVICES=$(echo "$CHANGED_FILES" | \
             grep "^services/" | \
@@ -61,16 +58,8 @@ jobs:
             sort -u | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
           
-          # Check if storage configuration changed
-          STORAGE_CHANGED=$(echo "$CHANGED_FILES" | grep "^config/storage/" || echo "")
-          if [ -n "$STORAGE_CHANGED" ]; then
-            echo "Storage configuration changed, adding to deployment list"
-            CHANGED_SERVICES=$(echo "$CHANGED_SERVICES" | jq -c '. + ["storage"] | unique')
-          fi
-          
           echo "Changed services: $CHANGED_SERVICES"
           
-          # Check if we have any services to deploy
           if [ "$CHANGED_SERVICES" = "[]" ] || [ "$CHANGED_SERVICES" = "" ]; then
             echo "has-changes=false" >> $GITHUB_OUTPUT
             echo "services=[]" >> $GITHUB_OUTPUT
@@ -79,14 +68,76 @@ jobs:
             echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           fi
 
-  deploy-to-production:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
+  detect-infra:
+    runs-on: ubuntu-latest
+    outputs:
+      changed-infra: ${{ steps.changes.outputs.infra }}
+      has-changes: ${{ steps.changes.outputs.has-changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed infra
+        id: changes
+        run: |
+          # Compare with the previous commit
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          CHANGED_INFRA="[]"
+          HAS_CHANGES="false"
+          
+          # Check for configuration changes
+          CONFIG_CHANGES=$(echo "$CHANGED_FILES" | grep "^config/" || echo "")
+          
+          if [ -n "$CONFIG_CHANGES" ]; then
+            echo "Configuration changes detected"
+            
+            # Check for storage changes
+            if echo "$CONFIG_CHANGES" | grep -q "^config/storage/"; then
+              echo "Storage configuration changed"
+              CHANGED_INFRA=$(echo "$CHANGED_INFRA" | jq -c '. + ["storage"] | unique')
+              HAS_CHANGES="true"
+            fi
+            
+            # Check for secrets changes
+            if echo "$CONFIG_CHANGES" | grep -q "^config/secrets/"; then
+              echo "Secrets configuration changed"
+              CHANGED_INFRA=$(echo "$CHANGED_INFRA" | jq -c '. + ["cluster-secrets"] | unique')
+              HAS_CHANGES="true"
+            fi
+          fi
+          
+          echo "Changed infra: $CHANGED_INFRA"
+          echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+          echo "infra=$CHANGED_INFRA" >> $GITHUB_OUTPUT
+
+  deploy-infra:
+    needs: detect-infra
+    if: needs.detect-infra.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
       environment: prod
       namespace: default
-      changed-services: ${{ needs.detect-changes.outputs.changed-services }}
+      changed-services: ${{ needs.detect-infra.outputs.changed-infra }}
+      deploy-all: false
+    secrets:
+      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
+      KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
+      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+  deploy-services:
+    needs: [detect-services, deploy-infra]
+    if: |
+      always() && 
+      needs.detect-services.outputs.has-changes == 'true' && 
+      !startsWith(github.event.head_commit.message, '[skip-deploy]') &&
+      (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
+    uses: ./.github/workflows/helm-deploy.yaml
+    with:
+      environment: prod
+      namespace: default
+      changed-services: ${{ needs.detect-services.outputs.changed-services }}
       deploy-all: false
     secrets:
       TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
