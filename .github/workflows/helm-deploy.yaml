@@ -90,7 +90,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: 'latest'
+          version: 'v3.14.0'
 
       - name: Install SOPS
         run: |
@@ -102,26 +102,16 @@ jobs:
 
       - name: Install Helm Secrets Plugin
         run: |
-          # Set HELM_PLUGINS for this step and future steps
-          export HELM_PLUGINS=$HOME/.local/share/helm/plugins
-          echo "HELM_PLUGINS=$HELM_PLUGINS" >> $GITHUB_ENV
-          
-          mkdir -p "$HELM_PLUGINS"
-          
           # Install plugin
-          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.7.0 --verify=false
-          
-          # Debug info
-          echo "--- Helm Env ---"
-          helm env
-          echo "--- Plugin Dir ---"
-          ls -R "$HELM_PLUGINS"
+          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0
           
           # Verify installation
           helm plugin list
-          
-          # Test plugin works
           helm secrets --version
+          
+          # Persist plugin path for future steps
+          PLUGIN_PATH=$(helm env HELM_PLUGINS)
+          echo "HELM_PLUGINS=$PLUGIN_PATH" >> $GITHUB_ENV
 
       - name: Setup SOPS Age Key
         run: |
