@@ -6,7 +6,7 @@ fullnameOverride: ""
 image:
   repository: ghcr.io/raydak-labs/configarr
   tag: latest
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 # CronJob schedule (default: every hour)
 schedule: "0 * * * *"

@@ -10,6 +10,7 @@ Params:
 {{- $configPath := .ConfigPath | default "/config" -}}
 - name: restore-config
   image: instrumentisto/rsync-ssh:latest
+  imagePullPolicy: IfNotPresent
   command: ["/bin/sh", "-c"]
   args:
     - |
@@ -49,6 +50,7 @@ Params:
 {{- $configPath := .ConfigPath | default "/config" -}}
 - name: backup-config
   image: instrumentisto/rsync-ssh:latest
+  imagePullPolicy: IfNotPresent
   command: ["/bin/sh", "-c"]
   args:
     - |
