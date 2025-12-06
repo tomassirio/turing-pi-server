@@ -102,13 +102,17 @@ jobs:
 
       - name: Install Helm Secrets Plugin
         run: |
+          # Set HELM_PLUGINS environment variable
+          echo "HELM_PLUGINS=$HOME/.local/share/helm/plugins" >> $GITHUB_ENV
+          
+          # Install plugin
           helm plugin install https://github.com/jkroepke/helm-secrets --version v4.7.0 --verify=false
           
           # Verify installation
           helm plugin list | grep secrets
           
           # Test plugin works
-          helm secrets --version || true
+          helm secrets --version
 
       - name: Setup SOPS Age Key
         run: |
