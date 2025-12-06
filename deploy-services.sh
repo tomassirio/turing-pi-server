@@ -20,6 +20,10 @@ echo -e "${BLUE}
 +==================================================+
 ${NC}"
 
+echo -e "${BLUE}🔐  Deploying cluster-secrets...${NC}"
+helm secrets upgrade -i cluster-secrets "$(dirname "$0")/config/secrets" -f "$(dirname "$0")/config/secrets/secrets.yaml"
+echo -e "${BLUE}==================================================${NC}"
+
 for serviceFolder in "$SERVICES_DIR"/*/; do
   serviceName=$(basename "$serviceFolder")
 

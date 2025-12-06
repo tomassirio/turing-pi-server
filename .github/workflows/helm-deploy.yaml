@@ -155,6 +155,7 @@ jobs:
           if [ "$SERVICE" = "cluster-secrets" ]; then
             echo "🔐 Deploying cluster-secrets chart..."
             helm secrets upgrade --install cluster-secrets ./config/secrets \
+              --namespace "${{ inputs.namespace }}" \
               --create-namespace \
               --wait --timeout 5m \
               -f ./config/secrets/secrets.yaml
