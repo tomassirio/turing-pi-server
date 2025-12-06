@@ -144,7 +144,8 @@ jobs:
             echo "📦 Deploying storage chart..."
             helm upgrade --install storage ./config/storage \
               --create-namespace \
-              --wait --timeout 5m
+              --wait --timeout 5m \
+              -f ./config/global-values.yaml
             
             echo "✓ Storage deployed successfully"
             exit 0
@@ -163,6 +164,7 @@ jobs:
             --create-namespace
             --wait
             --timeout 5m
+            -f ./config/global-values.yaml
           )
           
           # Override ingress host and storage for dev environment

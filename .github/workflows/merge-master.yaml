@@ -81,7 +81,7 @@ jobs:
 
   deploy-to-production:
     needs: detect-changes
-    if: needs.detect-changes.outputs.has-changes == 'true'
+    if: needs.detect-changes.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
       environment: prod
