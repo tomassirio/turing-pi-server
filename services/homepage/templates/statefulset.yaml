@@ -6,9 +6,7 @@ metadata:
     {{- include "homepage.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "homepage.fullname" . }}
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "homepage.selectorLabels" . | nindent 6 }}
@@ -48,11 +46,11 @@ spec:
               value: {{ .Values.env.PUID | quote }}
             - name: PGID
               value: {{ .Values.env.PGID | quote }}
-          {{- if and .Values.secrets .Values.secrets.homepage .Values.secrets.homepage.data }}
           envFrom:
+            {{- if and .Values.secrets .Values.secrets.homepage .Values.secrets.homepage.data }}
             - secretRef:
                 name: {{ include "homepage.fullname" . }}-secrets
-          {{- end }}
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:

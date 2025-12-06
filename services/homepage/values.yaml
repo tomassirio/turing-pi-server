@@ -75,12 +75,6 @@ readinessProbe:
   periodSeconds: 10
   failureThreshold: 3
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-
 nodeSelector: {}
 
 tolerations: []
