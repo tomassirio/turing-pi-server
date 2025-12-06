@@ -109,7 +109,7 @@ jobs:
           mkdir -p "$HELM_PLUGINS"
           
           # Install plugin
-          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.0 --verify=false
+          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.7.0 --verify=false
           
           # Debug info
           echo "--- Helm Env ---"
