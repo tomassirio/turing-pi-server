@@ -102,14 +102,23 @@ jobs:
 
       - name: Install Helm Secrets Plugin
         run: |
-          # Set HELM_PLUGINS environment variable
-          echo "HELM_PLUGINS=$HOME/.local/share/helm/plugins" >> $GITHUB_ENV
+          # Set HELM_PLUGINS for this step and future steps
+          export HELM_PLUGINS=$HOME/.local/share/helm/plugins
+          echo "HELM_PLUGINS=$HELM_PLUGINS" >> $GITHUB_ENV
+          
+          mkdir -p "$HELM_PLUGINS"
           
           # Install plugin
           helm plugin install https://github.com/jkroepke/helm-secrets --version v4.7.0 --verify=false
           
+          # Debug info
+          echo "--- Helm Env ---"
+          helm env
+          echo "--- Plugin Dir ---"
+          ls -R "$HELM_PLUGINS"
+          
           # Verify installation
-          helm plugin list | grep secrets
+          helm plugin list
           
           # Test plugin works
           helm secrets --version
