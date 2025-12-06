@@ -1,0 +1,5 @@
+# Global values to be passed to all charts
+# This file allows configuring common settings like imagePullSecrets across all services.
+
+imagePullSecrets:
+  - name: regcred

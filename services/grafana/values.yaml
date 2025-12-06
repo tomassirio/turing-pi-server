@@ -6,6 +6,7 @@ image:
   tag: "10.2.0"
 
 imagePullSecrets: []
+  # - name: regcred
 nameOverride: ""
 fullnameOverride: ""
 

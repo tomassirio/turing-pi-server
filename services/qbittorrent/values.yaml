@@ -5,8 +5,9 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
+  # - name: regcred
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
@@ -78,6 +79,7 @@ persistence:
   config:
     enabled: true
     existingClaim: nas-config-pvc
+    subPath: qbittorrent
 
 ingress:
   enabled: true

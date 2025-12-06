@@ -20,6 +20,10 @@ echo -e "${BLUE}
 +==================================================+
 ${NC}"
 
+echo -e "${BLUE}🔐  Deploying cluster-secrets...${NC}"
+helm secrets upgrade -i cluster-secrets "$(dirname "$0")/config/secrets" -f "$(dirname "$0")/config/secrets/secrets.yaml"
+echo -e "${BLUE}==================================================${NC}"
+
 for serviceFolder in "$SERVICES_DIR"/*/; do
   serviceName=$(basename "$serviceFolder")
 
@@ -34,13 +38,15 @@ for serviceFolder in "$SERVICES_DIR"/*/; do
   echo -e "${BLUE}📦  Updating dependencies for $serviceName...${NC}"
   helm dependency update --skip-refresh "$serviceFolder"
 
+  GLOBAL_VALUES="$(dirname "$0")/config/global-values.yaml"
+
   if [ -f "$serviceFolder/secrets.yaml" ]; then
     echo -e "${YELLOW}🤫  Found secrets.yaml, deploying with sops...${NC}"
-    helm secrets upgrade -i "$serviceName" "$serviceFolder" -f "$serviceFolder/secrets.yaml"
+    helm secrets upgrade -i "$serviceName" "$serviceFolder" -f "$GLOBAL_VALUES" -f "$serviceFolder/secrets.yaml"
     sops_services+=("$serviceName")
   else
     echo -e "${GREEN}✅  No secrets.yaml found, deploying with standard helm...${NC}"
-    helm upgrade -i "$serviceName" "$serviceFolder"
+    helm upgrade -i "$serviceName" "$serviceFolder" -f "$GLOBAL_VALUES"
     deployed_services+=("$serviceName")
   fi
 

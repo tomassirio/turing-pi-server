@@ -144,9 +144,23 @@ jobs:
             echo "📦 Deploying storage chart..."
             helm upgrade --install storage ./config/storage \
               --create-namespace \
-              --wait --timeout 5m
+              --wait --timeout 5m \
+              -f ./config/global-values.yaml
             
             echo "✓ Storage deployed successfully"
+            exit 0
+          fi
+
+          # Handle cluster-secrets as a special case
+          if [ "$SERVICE" = "cluster-secrets" ]; then
+            echo "🔐 Deploying cluster-secrets chart..."
+            helm secrets upgrade --install cluster-secrets ./config/secrets \
+              --namespace "${{ inputs.namespace }}" \
+              --create-namespace \
+              --wait --timeout 5m \
+              -f ./config/secrets/secrets.yaml
+            
+            echo "✓ Cluster secrets deployed successfully"
             exit 0
           fi
           
@@ -163,6 +177,7 @@ jobs:
             --create-namespace
             --wait
             --timeout 5m
+            -f ./config/global-values.yaml
           )
           
           # Override ingress host and storage for dev environment

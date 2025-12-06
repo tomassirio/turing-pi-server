@@ -92,7 +92,7 @@ MetalLB provides a network load-balancer for bare-metal Kubernetes clusters.
 ```
 
 
-#### Nginx Ingress Controller
+#### Nginx Ingress
 
 The Nginx Ingress Controller uses NGINX as a reverse proxy and load balancer.
 
@@ -100,6 +100,29 @@ The Nginx Ingress Controller uses NGINX as a reverse proxy and load balancer.
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
 ```
+## Manual Deployment
+
+To deploy all services, including the centralized secrets:
+
+```bash
+./deploy-services.sh
+```
+
+To deploy a single service manually, you must include the global values file to ensure secrets (like `regcred`) are configured correctly:
+
+```bash
+# Standard deployment
+helm upgrade -i <service-name> ./services/<service-name> -f config/global-values.yaml
+
+# Deployment with SOPS secrets
+helm secrets upgrade -i <service-name> ./services/<service-name> -f config/global-values.yaml -f ./services/<service-name>/secrets.yaml
+```
+
+## CI/CD Features
+
+- **Skip Deployment**: Start your commit message with `[skip-deploy]` to skip the deployment step in the pipeline.
+- **Parallel Detection**: The pipeline checks for changes in `services/` and `config/` (storage/secrets) in parallel.
+- **Global Secrets**: `cluster-secrets` are automatically deployed if changes are detected in `config/secrets`.
 
 #### CoreDNS
 
