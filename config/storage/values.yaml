@@ -211,3 +211,5 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         persistentVolumeName: nas-config-pv
+
+deploy: me
