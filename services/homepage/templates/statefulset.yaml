@@ -62,6 +62,9 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
+              {{- if .Values.persistence.config.subPath }}
+              subPath: {{ .Values.persistence.config.subPath }}
+              {{- end }}
             - name: homepage-config
               mountPath: /app/config/settings.yaml
               subPath: settings.yaml
