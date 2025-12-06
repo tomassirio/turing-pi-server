@@ -6,8 +6,8 @@ image:
   tag: v2.15.0
   pullPolicy: IfNotPresent
 
-imagePullSecrets:
-  - name: regcred
+imagePullSecrets: []
+  # - name: regcred
 
 service:
   type: ClusterIP
