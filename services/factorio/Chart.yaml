@@ -1,0 +1,10 @@
+apiVersion: v2
+name: factorio
+description: A Helm chart for Factorio Server
+type: application
+version: 0.1.0
+appVersion: "1.1.100"
+dependencies:
+  - name: factorio-server-charts
+    version: "1.0.10"
+    repository: "https://sqljames.github.io/factorio-server-charts"
