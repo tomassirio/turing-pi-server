@@ -4,6 +4,19 @@ factorio-server-charts:
     annotations:
       metallb.universe.tf/loadBalancerIPs: "192.168.2.220"
   
+  # Server settings - personalization
+  factorioServer:
+    save_name: "tommy-net-a"
+
+  server_settings:
+    name: "Tommy Net-A - A Factorio Server"
+    description: "Welcome to Tommy Net-A! Automatizame esta"
+    tags:
+      - "turing-pi"
+      - "tommy-net"
+    admins:
+      - "tomassirio"
+
   # Map settings for Factorio 2.0 (Space Age) - using chart defaults
   map_settings:
     difficulty_settings:
@@ -104,7 +117,9 @@ factorio-server-charts:
     max_failed_behavior_count: 3
 
   rcon:
+    external: true
     type: LoadBalancer
     port: 27015
+    password: "CHANGEME"  # Change this to a secure password
     annotations:
       metallb.universe.tf/loadBalancerIPs: "192.168.2.221"
