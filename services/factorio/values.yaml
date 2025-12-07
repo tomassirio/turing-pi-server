@@ -4,18 +4,27 @@ factorio-server-charts:
     annotations:
       metallb.universe.tf/loadBalancerIPs: "192.168.2.220"
   
+  # Persistence - use existing NFS PVC
+  persistence:
+    enabled: true
+    dataDir:
+      existingClaim: factorio-pvc
+
   # Server settings - personalization
   factorioServer:
-    save_name: "tommy-net-a"
+    save_name: "factorio.tomassir.io"
 
   server_settings:
-    name: "Tommy Net-A - A Factorio Server"
-    description: "Welcome to Tommy Net-A! Automatizame esta"
+    name: "Factorio.Tommassir.io - A Factorio Server"
+    description: "Welcome to Tommassir.io! Automatizame esta"
     tags:
       - "turing-pi"
-      - "tommy-net"
+      - "tommy-net-a"
+      - "tomassir.io"
     admins:
       - "tomassirio"
+    game_password: ""  # Also set here for server-settings.json - value comes from secrets
+
 
   # Map settings for Factorio 2.0 (Space Age) - using chart defaults
   map_settings:
@@ -116,10 +125,13 @@ factorio-server-charts:
       negative_path_cache_delay_interval: 20
     max_failed_behavior_count: 3
 
+
   rcon:
     external: true
     type: LoadBalancer
     port: 27015
-    password: "CHANGEME"  # Change this to a secure password
+    password: ""  # Set via secrets.yaml
     annotations:
       metallb.universe.tf/loadBalancerIPs: "192.168.2.221"
+
+

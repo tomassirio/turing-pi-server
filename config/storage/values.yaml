@@ -154,6 +154,10 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /mnt/ssd/config-dev
+      - name: factorio-pv
+        storage: 5Gi
+        accessMode: ReadWriteOnce
+        path: /mnt/ssd/factorio
   pvc:
     data:
       - name: nfs-pvc
@@ -185,6 +189,11 @@ nfs:
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-config-pv-dev
         namespace: turing-pi-dev
+      - name: factorio-pvc
+        storage: 5Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: factorio-pv
+        namespace: factorio
 
 nas:
   pv:
