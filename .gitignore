@@ -9,3 +9,6 @@ services/testing/*
 *.dec.yaml
 *.dec.yml
 *secrets.dec.*
+
+# TLS certificates (stored encrypted in secrets.yaml)
+certs/

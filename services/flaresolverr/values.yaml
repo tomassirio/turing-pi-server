@@ -48,6 +48,15 @@ ingress:
   enabled: true
   className: nginx
   host: flaresolverr.localhome.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tls:
+    - secretName: localhome-tls
+      hosts:
+        - flaresolverr.localhome.com
 
 env:
   LOG_LEVEL: "info"
