@@ -1,0 +1,13 @@
+apiVersion: v2
+name: filezilla
+description: A Helm chart for FileZilla - GUI FTP client for guest NAS access
+
+# Application chart
+type: application
+
+# Chart version
+version: 0.1.0
+
+# FileZilla version
+appVersion: "3.67.1"
+
