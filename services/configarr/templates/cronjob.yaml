@@ -17,6 +17,19 @@ spec:
             {{- include "configarr.selectorLabels" . | nindent 12 }}
         spec:
           restartPolicy: {{ .Values.restartPolicy }}
+          # Use host DNS to resolve external domains like github.com
+          dnsPolicy: "None"
+          dnsConfig:
+            nameservers:
+              - 8.8.8.8
+              - 1.1.1.1
+            searches:
+              - default.svc.cluster.local
+              - svc.cluster.local
+              - cluster.local
+            options:
+              - name: ndots
+                value: "5"
           containers:
             - name: configarr
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
