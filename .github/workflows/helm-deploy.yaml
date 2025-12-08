@@ -87,6 +87,26 @@ jobs:
           echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
+      - name: Wait for cluster connectivity
+        run: |
+          echo "Waiting for cluster connectivity..."
+          MAX_RETRIES=30
+          RETRY_INTERVAL=10
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i/$MAX_RETRIES: Testing cluster connection..."
+            if kubectl cluster-info --request-timeout=10s > /dev/null 2>&1; then
+              echo "✓ Cluster is reachable"
+              kubectl cluster-info
+              exit 0
+            fi
+            echo "Cluster not reachable yet, waiting ${RETRY_INTERVAL}s..."
+            sleep $RETRY_INTERVAL
+          done
+          
+          echo "✗ Failed to connect to cluster after $MAX_RETRIES attempts"
+          exit 1
+
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
