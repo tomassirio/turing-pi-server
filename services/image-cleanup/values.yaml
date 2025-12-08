@@ -3,7 +3,7 @@
 # Runs on ALL nodes to clean up unused container images at a specific time
 
 # Schedule in cron format (default: 2:00 AM daily)
-schedule: "0 2 * * *"
+schedule: "0 4 * * *"
 
 # Timezone for the cleanup schedule (requires Kubernetes 1.27+)
 timezone: "Europe/Amsterdam"
