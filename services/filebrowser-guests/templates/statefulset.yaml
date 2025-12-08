@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "filebrowser-guests.fullname" . }}
+  labels:
+    {{- include "filebrowser-guests.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "filebrowser-guests.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "filebrowser-guests.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "filebrowser-guests.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "filebrowser-guests.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-filebrowser
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ ! -f /database/filebrowser.db ]; then
+                echo "Initializing filebrowser database..."
+                /filebrowser config init --database=/database/filebrowser.db
+                /filebrowser users add {{ .Values.auth.username }} {{ .Values.auth.password }} --database=/database/filebrowser.db --perm.admin
+                echo "Database initialized with user {{ .Values.auth.username }}"
+              else
+                echo "Database already exists, skipping initialization"
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /database
+              subPath: {{ .Values.persistence.config.subPath }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --database=/database/filebrowser.db
+            - --root=/srv
+            - --address=0.0.0.0
+            - --port=80
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.data.mountPath | default "/srv" }}
+            - name: config
+              mountPath: /database
+              subPath: {{ .Values.persistence.config.subPath }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.data.existingClaim }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

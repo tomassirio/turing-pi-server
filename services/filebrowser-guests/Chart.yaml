@@ -1,0 +1,13 @@
+apiVersion: v2
+name: filebrowser-guests
+description: A Helm chart for FileBrowser - Web-based file browser for Guests folder sharing
+
+# Application chart
+type: application
+
+# Chart version
+version: 0.1.0
+
+# FileBrowser version
+appVersion: "latest"
+

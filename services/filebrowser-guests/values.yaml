@@ -1,0 +1,108 @@
+# FileBrowser for Guests - Web-based file sharing
+# This instance only exposes the Guests folder for friends to download files
+
+replicaCount: 1
+
+image:
+  repository: filebrowser/filebrowser
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: LoadBalancer
+  port: 42069
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.2.225"
+
+# Environment variables
+env:
+  PUID: "911"
+  PGID: "911"
+  TZ: "Europe/Amsterdam"
+
+# Authentication - override in secrets.yaml
+auth:
+  username: "guest"
+  password: "changeme"
+
+# Persistence - Only mount the Guests folder (matches filebrowser pattern)
+persistence:
+  data:
+    enabled: true
+    existingClaim: nas-guests-pvc
+    mountPath: /srv
+  config:
+    enabled: true
+    existingClaim: nfs-config-pvc
+    subPath: filebrowser-guests
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+  host: guests.localhome.com
+  tls:
+    - secretName: localhome-tls
+      hosts:
+        - guests.localhome.com
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

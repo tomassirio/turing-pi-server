@@ -1,0 +1,19 @@
+FileBrowser for Guests has been deployed!
+
+Access methods:
+
+1. Via Ingress (internal):
+   https://{{ .Values.ingress.host }}
+
+2. Via LoadBalancer (for port forwarding):
+   http://192.168.2.225:{{ .Values.service.port }}
+
+This FileBrowser instance only shows the Guests folder from your NAS.
+Share the URL with your friends so they can browse and download files.
+
+Default credentials (change after first login):
+- Username: admin
+- Password: admin
+
+For external access: Forward port {{ .Values.service.port }} on your router to 192.168.2.225:{{ .Values.service.port }}
+
