@@ -204,6 +204,10 @@ nas:
         storage: 30Ti
         accessMode: ReadWriteMany
         path: /volume1/K3S
+      - name: nas-guests-pv
+        storage: 1Ti
+        accessMode: ReadWriteMany
+        path: /volume1/Guests
     config:
       - name: nas-config-pv
         storage: 10Gi
@@ -215,6 +219,10 @@ nas:
         storage: 30Ti
         accessMode: ReadWriteMany
         persistentVolumeName: nas-pv
+      - name: nas-guests-pvc
+        storage: 1Ti
+        accessMode: ReadWriteMany
+        persistentVolumeName: nas-guests-pv
     config:
       - name: nas-config-pvc
         storage: 10Gi
