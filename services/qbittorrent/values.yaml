@@ -46,9 +46,18 @@ additionalContainers:
         value: "adminadmin"
       - name: EXPORTER_PORT
         value: "9091"
+      - name: EXPORTER_LOG_LEVEL
+        value: "WARNING"
     ports:
       - name: metrics
         containerPort: 9091
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -87,6 +96,13 @@ ingress:
   host: qbittorrent.localhome.com
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tls:
+    - secretName: localhome-tls
+      hosts:
+        - qbittorrent.localhome.com
 
 env:
   PUID: "1000"
@@ -109,14 +125,21 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# Using TCP socket check instead of HTTP to avoid overwhelming the web UI connection limit
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 5
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
 
 
 # This is for setting up the VPN more information can be found here: https://github.com/qdm12/gluetun-wiki/tree/main

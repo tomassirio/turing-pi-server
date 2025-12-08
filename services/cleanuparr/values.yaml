@@ -61,18 +61,20 @@ service:
 ingress:
   enabled: true
   className: nginx
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     - host: cleanuparr.localhome.com
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  tls:
+    - secretName: localhome-tls
+      hosts:
+        - cleanuparr.localhome.com
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

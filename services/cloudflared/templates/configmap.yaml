@@ -1,0 +1,20 @@
+{{- if .Values.tunnel.ingress }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cloudflared.fullname" . }}-config
+  labels:
+    {{- include "cloudflared.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    tunnel: {{ .Values.tunnel.id }}
+    credentials-file: /etc/cloudflared/credentials.json
+    no-autoupdate: true
+    ingress:
+    {{- range .Values.tunnel.ingress }}
+      - hostname: {{ .hostname }}
+        service: {{ .service }}
+    {{- end }}
+      - service: http_status:404
+{{- end }}
+

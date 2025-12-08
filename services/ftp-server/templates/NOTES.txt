@@ -1,0 +1,20 @@
+FTP Server has been deployed!
+
+To connect to your FTP server:
+
+1. Get the LoadBalancer IP:
+   kubectl get svc {{ include "ftp-server.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+2. Connect with any FTP client (FileZilla, WinSCP, etc.):
+   - Host: <LoadBalancer IP>
+   - Port: 21
+   - Username: guest
+   - Password: (the password you configured in secrets)
+   - Mode: Passive
+
+3. The NAS Guests folder is available as the FTP root directory.
+
+Notes:
+- Passive mode ports {{ .Values.env.MIN_PORT }}-{{ .Values.env.MAX_PORT }} are exposed for data connections
+- Using alpine-ftp-server (ARM64 compatible)
+

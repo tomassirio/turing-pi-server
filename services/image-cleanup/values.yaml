@@ -1,0 +1,42 @@
+# Default values for image-cleanup CronJob
+# This is a YAML-formatted file.
+# Runs on ALL nodes to clean up unused container images at a specific time
+
+# Schedule in cron format (default: 2:00 AM daily)
+schedule: "0 4 * * *"
+
+# Timezone for the cleanup schedule (requires Kubernetes 1.27+)
+timezone: "Europe/Amsterdam"
+
+# Image to use for cleanup job (using k3s image as it has crictl built-in)
+image:
+  repository: rancher/k3s
+  tag: v1.28.4-k3s2
+  pullPolicy: IfNotPresent
+
+# Job history limits
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+
+# Concurrency policy: Allow, Forbid, Replace
+concurrencyPolicy: Forbid
+
+# Resources for the cleanup daemon (minimal since it mostly sleeps)
+resources:
+  limits:
+    cpu: 50m
+    memory: 64Mi
+  requests:
+    cpu: 10m
+    memory: 32Mi
+
+# Node selector - empty means run on all nodes
+nodeSelector: {}
+
+# Tolerations to run on all nodes including control plane
+tolerations:
+  - operator: Exists
+    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
+

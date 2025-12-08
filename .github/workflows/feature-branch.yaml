@@ -8,6 +8,13 @@ on:
     paths:
       - 'services/**'
       - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      skip-dev:
+        description: 'Skip dev deployment'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   detect-services:
@@ -28,15 +35,22 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
           else
-            # For push events, compare with the previous commit
-            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            # For push events, compare with main branch or use all commits in push
+            if git rev-parse origin/main >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            fi
           fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
           
           # Extract unique service names from changed files in services/ directory
           CHANGED_SERVICES=$(echo "$CHANGED_FILES" | \
             grep "^services/" | \
             cut -d'/' -f2 | \
-            grep -v "archived\|testing" | \
+            grep -v "archived\|testing\|common" | \
             sort -u | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
           
@@ -68,9 +82,16 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
           else
-            # For push events, compare with the previous commit
-            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            # For push events, compare with main branch or use all commits in push
+            if git rev-parse origin/main >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            fi
           fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
           
           CHANGED_INFRA="[]"
           HAS_CHANGES="false"
@@ -100,9 +121,38 @@ jobs:
           echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
           echo "infra=$CHANGED_INFRA" >> $GITHUB_OUTPUT
 
+  check-skip-dev:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Check if dev should be skipped
+        id: check
+        run: |
+          # Check workflow dispatch input
+          if [ "${{ github.event.inputs.skip-dev }}" = "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping dev deployment (workflow dispatch input)"
+            exit 0
+          fi
+          
+          # Check commit message for [skip-dev] or [no-dev]
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          if echo "$COMMIT_MSG" | grep -qiE '\[(skip-dev|no-dev)\]'; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping dev deployment (commit message)"
+            exit 0
+          fi
+          
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "Dev deployment will proceed"
+
   deploy-infra:
-    needs: detect-infra
-    if: needs.detect-infra.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
+    needs: [detect-infra, check-skip-dev]
+    if: |
+      needs.detect-infra.outputs.has-changes == 'true' && 
+      needs.check-skip-dev.outputs.skip != 'true' &&
+      !startsWith(github.event.head_commit.message, '[skip-deploy]')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
       environment: dev
@@ -115,10 +165,11 @@ jobs:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
   deploy-services:
-    needs: [detect-services, deploy-infra]
+    needs: [detect-services, deploy-infra, check-skip-dev]
     if: |
       always() && 
       needs.detect-services.outputs.has-changes == 'true' && 
+      needs.check-skip-dev.outputs.skip != 'true' &&
       !startsWith(github.event.head_commit.message, '[skip-deploy]') &&
       (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
     uses: ./.github/workflows/helm-deploy.yaml
