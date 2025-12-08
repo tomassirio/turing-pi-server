@@ -31,6 +31,18 @@ spec:
               value: "{{ .Values.env.PUID }}"
             - name: PGID
               value: "{{ .Values.env.PGID }}"
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: root
               mountPath: /data
