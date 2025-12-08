@@ -35,15 +35,22 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
           else
-            # For push events, compare with the previous commit
-            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            # For push events, compare with main branch or use all commits in push
+            if git rev-parse origin/main >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            fi
           fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
           
           # Extract unique service names from changed files in services/ directory
           CHANGED_SERVICES=$(echo "$CHANGED_FILES" | \
             grep "^services/" | \
             cut -d'/' -f2 | \
-            grep -v "archived\|testing" | \
+            grep -v "archived\|testing\|common" | \
             sort -u | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
           
@@ -75,9 +82,16 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
           else
-            # For push events, compare with the previous commit
-            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            # For push events, compare with main branch or use all commits in push
+            if git rev-parse origin/main >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            fi
           fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
           
           CHANGED_INFRA="[]"
           HAS_CHANGES="false"
