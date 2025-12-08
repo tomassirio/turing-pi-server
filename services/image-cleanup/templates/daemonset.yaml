@@ -1,0 +1,84 @@
+# DaemonSet to run image cleanup on ALL nodes using cron
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "image-cleanup.fullname" . }}
+  labels:
+    {{- include "image-cleanup.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "image-cleanup.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "image-cleanup.selectorLabels" . | nindent 8 }}
+    spec:
+      hostPID: true
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: cleanup
+          image: alpine:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Create the cleanup script
+              cat > /cleanup.sh << 'EOF'
+              #!/bin/sh
+              echo "=========================================="
+              echo "Starting image cleanup on $(hostname) at $(date)"
+              echo "=========================================="
+
+              echo ""
+              echo "Disk usage BEFORE cleanup:"
+              df -h / || true
+
+              echo ""
+              echo "Pruning unused container images..."
+              nsenter -t 1 -m -u -i -n -- k3s crictl rmi --prune 2>&1 || echo "Prune completed with warnings"
+
+              echo ""
+              echo "Disk usage AFTER cleanup:"
+              df -h / || true
+
+              echo ""
+              echo "=========================================="
+              echo "Image cleanup completed on $(hostname) at $(date)"
+              echo "=========================================="
+              EOF
+              chmod +x /cleanup.sh
+
+              # Create crontab entry
+              echo "{{ .Values.schedule }} /cleanup.sh >> /var/log/cleanup.log 2>&1" > /etc/crontabs/root
+
+              echo "Image cleanup cron scheduled: {{ .Values.schedule }} ({{ .Values.timezone }})"
+              echo "Waiting for scheduled cleanup time..."
+
+              # Start crond in foreground
+              crond -f -l 2
+          env:
+            - name: TZ
+              value: "{{ .Values.timezone }}"
+          securityContext:
+            privileged: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+              readOnly: false
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+            type: Directory
+

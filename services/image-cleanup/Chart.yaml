@@ -1,0 +1,10 @@
+apiVersion: v2
+name: image-cleanup
+description: A Helm chart for cleaning up unused container images on k3s nodes
+
+type: application
+
+version: 0.1.0
+
+appVersion: "1.0.0"
+

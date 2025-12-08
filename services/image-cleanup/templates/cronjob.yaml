@@ -1,0 +1,2 @@
+{{/* CronJob not used - using DaemonSet with crond for all-node coverage */}}
+

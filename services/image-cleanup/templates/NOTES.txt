@@ -1,0 +1,18 @@
+Image Cleanup deployed successfully!
+
+The cleanup daemon is now running on all nodes in your cluster.
+
+Configuration:
+- Schedule: {{ .Values.schedule }} ({{ .Values.timezone }})
+- Runs on ALL nodes (including control plane)
+
+What it does:
+- Automatically prunes unused container images using `k3s crictl rmi --prune`
+- Reports disk usage before and after cleanup
+
+To check the cleanup logs:
+  kubectl logs -l app.kubernetes.io/name=image-cleanup -n {{ .Release.Namespace }}
+
+To trigger an immediate cleanup (restart the pods):
+  kubectl rollout restart daemonset/{{ include "image-cleanup.fullname" . }} -n {{ .Release.Namespace }}
+
