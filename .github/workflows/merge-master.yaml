@@ -153,30 +153,8 @@ jobs:
           echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
           echo "infra=$CHANGED_INFRA" >> $GITHUB_OUTPUT
 
-  # Summary job to show what will be deployed and wait for approval
-  deployment-summary:
-    needs: [detect-services, detect-infra]
-    if: |
-      (needs.detect-services.outputs.has-changes == 'true' || needs.detect-infra.outputs.has-changes == 'true') &&
-      !startsWith(github.event.head_commit.message, '[skip-deploy]')
-    runs-on: ubuntu-latest
-    # This environment requires approval in GitHub settings
-    environment: prod-approval
-    steps:
-      - name: Deployment Summary
-        run: |
-          echo "=============================================="
-          echo "🚀 PRODUCTION DEPLOYMENT SUMMARY"
-          echo "=============================================="
-          echo ""
-          echo "📦 Services to deploy: ${{ needs.detect-services.outputs.changed-services }}"
-          echo "🔧 Infra to deploy: ${{ needs.detect-infra.outputs.changed-infra }}"
-          echo ""
-          echo "This deployment requires approval."
-          echo "=============================================="
-
   deploy-infra:
-    needs: [detect-infra, deployment-summary]
+    needs: [detect-infra]
     if: needs.detect-infra.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
@@ -190,11 +168,10 @@ jobs:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
   deploy-services:
-    needs: [detect-services, deploy-infra, deployment-summary]
+    needs: [detect-services, deploy-infra]
     if: |
       always() && 
       needs.detect-services.outputs.has-changes == 'true' && 
-      needs.deployment-summary.result == 'success' &&
       !startsWith(github.event.head_commit.message, '[skip-deploy]') &&
       (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
     uses: ./.github/workflows/helm-deploy.yaml

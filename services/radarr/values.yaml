@@ -40,6 +40,8 @@ ingress:
   host: radarr.localhome.com
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
 
 env:
   PUID: "911"
