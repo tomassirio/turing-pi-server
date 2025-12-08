@@ -1,0 +1,62 @@
+# Cloudflare Tunnel configuration
+# Securely expose internal services to the internet without opening ports
+
+replicaCount: 1
+
+image:
+  repository: cloudflare/cloudflared
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+# Cloudflare Tunnel token - get this from Cloudflare Zero Trust dashboard
+# This should be overridden in secrets.yaml
+tunnel:
+  # The tunnel token from Cloudflare (required)
+  token: "YOUR_TUNNEL_TOKEN_HERE"
+
+# DNS configuration for resolving internal services
+# Set clusterDNS to your cluster's CoreDNS service IP (kubectl get svc -n kube-system kube-dns)
+dns:
+  clusterDNS: "10.43.0.10"
+  fallbackDNS: "1.1.1.1"
+
+# Host aliases - manually map service names to IPs (bypasses DNS)
+# Use this if DNS resolution is problematic
+# Get the ClusterIP with: kubectl get svc filebrowser-guests -o jsonpath='{.spec.clusterIP}'
+hostAliases:
+  - ip: "10.43.18.2"
+    hostnames:
+      - "filebrowser-guests"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+

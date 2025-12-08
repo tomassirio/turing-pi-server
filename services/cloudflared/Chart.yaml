@@ -1,0 +1,8 @@
+apiVersion: v2
+name: cloudflared
+description: Cloudflare Tunnel for secure external access to internal services
+
+type: application
+version: 0.1.0
+appVersion: "latest"
+

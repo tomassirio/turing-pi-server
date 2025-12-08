@@ -1,0 +1,17 @@
+Cloudflare Tunnel has been deployed!
+
+The tunnel is now running and connecting to Cloudflare's edge network.
+
+To configure your tunnel routes, go to:
+  Cloudflare Zero Trust Dashboard > Networks > Tunnels > Your Tunnel > Public Hostname
+
+Add a public hostname:
+  - Subdomain: guests
+  - Domain: tomassir.io
+  - Service Type: HTTP
+  - URL: filebrowser-guests.default.svc.cluster.local:42069
+
+Your friends can then access: https://guests.tomassir.io
+
+Note: Use the full Kubernetes FQDN (service.namespace.svc.cluster.local) for reliable DNS resolution.
+
