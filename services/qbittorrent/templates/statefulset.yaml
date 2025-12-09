@@ -19,6 +19,22 @@ spec:
       labels:
         app: {{ include "qbittorrent.name" . }}
     spec:
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "qbittorrent" "ConfigPath" "/config") | nindent 8 }}
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "🔧 Fixing permissions for qBittorrent (user 1000)..."
+              chown -R 1000:1000 /config 2>/dev/null || true
+              chmod -R u+rwX /config 2>/dev/null || true
+              echo "✅ Permissions fixed."
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          securityContext:
+            runAsUser: 0
       containers:
         - name: qbittorrent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -48,9 +64,20 @@ spec:
               mountPath: /data
             - name: config
               mountPath: /config
-              {{- if .Values.persistence.config.subPath }}
-              subPath: {{ .Values.persistence.config.subPath }}
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
               {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
         {{- if .Values.vpn.enabled }}
         - name: gluetun
           image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
@@ -101,11 +128,21 @@ spec:
       {{- if .Values.additionalContainers }}
         {{- toYaml .Values.additionalContainers | nindent 8 }}
       {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "qbittorrent" "ConfigPath" "/config") | nindent 8 }}
       volumes:
         - name: root
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.root.existingClaim }}
         - name: config
+          emptyDir: {}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.config.existingClaim }}
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
 
