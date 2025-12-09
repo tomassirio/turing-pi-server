@@ -71,6 +71,24 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# This is to setup the liveness and readiness probes
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
 autoscaling:
   enabled: false
   minReplicas: 1

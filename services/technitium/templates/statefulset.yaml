@@ -46,12 +46,16 @@ spec:
               value: "{{ .Values.env.TZ }}"
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.webuiPort }}
               protocol: TCP
-{{/*          livenessProbe:*/}}
-{{/*            {{- toYaml .Values.livenessProbe | nindent 12 }}*/}}
-{{/*          readinessProbe:*/}}
-{{/*            {{- toYaml .Values.readinessProbe | nindent 12 }}*/}}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}

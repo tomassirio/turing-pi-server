@@ -41,14 +41,14 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /api/health
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /api/health
-          #     port: http
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
