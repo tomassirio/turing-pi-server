@@ -50,6 +50,11 @@ for serviceFolder in "$SERVICES_DIR"/*/; do
     echo -e "${YELLOW}🎮  Deploying factorio to namespace: factorio${NC}"
   fi
 
+  if [ "$serviceName" == "kube-state-metrics" ]; then
+    NAMESPACE_ARGS="--namespace kube-public --create-namespace"
+    echo -e "${YELLOW}🎮  Deploying kube-state-metrics to namespace: kube-public${NC}"
+  fi
+
   if [ -f "$serviceFolder/secrets.yaml" ]; then
     echo -e "${YELLOW}🤫  Found secrets.yaml, deploying with sops...${NC}"
     if helm secrets upgrade -i "$serviceName" "$serviceFolder" $NAMESPACE_ARGS -f "$GLOBAL_VALUES" -f "$serviceFolder/secrets.yaml"; then

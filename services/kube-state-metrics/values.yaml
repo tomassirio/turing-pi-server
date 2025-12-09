@@ -1,0 +1,42 @@
+# Default values for kube-state-metrics
+# This deploys kube-state-metrics to export Kubernetes object metrics to Prometheus
+
+replicaCount: 1
+
+image:
+  repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+  tag: v2.10.1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 8080
+  telemetryPort: 8081
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  name: kube-state-metrics
+
+# Pod annotations for Prometheus scraping
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Node selector for scheduling
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
