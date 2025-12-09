@@ -92,7 +92,7 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /health
-    port: http
+    port: 11011
   initialDelaySeconds: 30
   timeoutSeconds: 5
   periodSeconds: 10
@@ -101,7 +101,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /health
-    port: http
+    port: 11011
   initialDelaySeconds: 30
   timeoutSeconds: 5
   periodSeconds: 10

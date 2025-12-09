@@ -101,8 +101,8 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /
-    port: target
-  initialDelaySeconds: 10
+    port: 8686
+  initialDelaySeconds: 30
   timeoutSeconds: 5
   periodSeconds: 10
   failureThreshold: 3
@@ -110,7 +110,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /
-    port: target
+    port: 8686
   initialDelaySeconds: 10
   timeoutSeconds: 5
   periodSeconds: 10

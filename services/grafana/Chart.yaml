@@ -4,3 +4,9 @@ description: A Helm chart for Grafana
 type: application
 version: 0.1.0
 appVersion: "10.2.0"
+
+dependencies:
+  - name: common
+    version: "0.1.0"
+    repository: "file://../common"
+

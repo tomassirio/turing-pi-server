@@ -43,9 +43,6 @@ spec:
             - name: webui
               containerPort: {{ .Values.service.webuiPort }}
               protocol: TCP
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           env:
             - name: PUID
               value: "{{ .Values.env.PUID }}"
@@ -53,10 +50,10 @@ spec:
               value: "{{ .Values.env.PGID }}"
             - name: TZ
               value: "{{ .Values.env.TZ }}"
-{{/*          livenessProbe:*/}}
-{{/*            {{- toYaml .Values.livenessProbe | nindent 12 }}*/}}
-{{/*          readinessProbe:*/}}
-{{/*            {{- toYaml .Values.readinessProbe | nindent 12 }}*/}}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}

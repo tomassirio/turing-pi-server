@@ -8,6 +8,7 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
 
 # Install CoreDns
+# Note: The deployment.podLabels must match the service selector labels
 helm install coredns coredns/coredns \
   --namespace=kube-system \
   --set service.clusterIP=10.43.0.10 \
@@ -15,4 +16,7 @@ helm install coredns coredns/coredns \
   --set isClusterService=true \
   --set serviceType=ClusterIP \
   --set prometheus.service.enabled=true \
-  --set kubernetes.clusterDomain=cluster.local
+  --set kubernetes.clusterDomain=cluster.local \
+  --set "deployment.podLabels.app\.kubernetes\.io/instance=coredns" \
+  --set "deployment.podLabels.app\.kubernetes\.io/name=coredns" \
+  --set "deployment.podLabels.k8s-app=kube-dns"
