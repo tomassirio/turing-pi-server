@@ -33,6 +33,20 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "grafana" "ConfigPath" "/var/lib/grafana") | nindent 8 }}
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "🔧 Fixing permissions for Grafana (user 472)..."
+              chown -R 472:472 /var/lib/grafana
+              chmod -R u+rwX /var/lib/grafana
+              echo "✅ Permissions fixed."
+          volumeMounts:
+            - name: config
+              mountPath: /var/lib/grafana
+          securityContext:
+            runAsUser: 0
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
