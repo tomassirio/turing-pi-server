@@ -44,6 +44,9 @@ Params:
   - .Values: The values context
   - .AppName: The name of the application (e.g. sonarr)
   - .ConfigPath: The path where config is mounted (default: /config)
+
+Manual backup trigger:
+  kubectl exec -it <pod-name> -c backup-config -- touch /tmp/trigger-backup
 */}}
 {{- define "common.backup.sidecar" -}}
 {{- $appName := .AppName -}}
@@ -54,10 +57,30 @@ Params:
   command: ["/bin/sh", "-c"]
   args:
     - |
+      do_backup() {
+        echo "🚀 Starting backup..."
+        mkdir -p /backup-dest/{{ $appName }}
+        # First, count total files
+        total=$(rsync -a --dry-run --stats --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/ | grep "Number of regular files transferred:" | awk '{print $6}')
+        echo "📊 Files to transfer: $total"
+        # Now do actual transfer with verbose output and counter
+        rsync -av --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/ | awk -v total="$total" 'BEGIN{count=0} !/\/$/ && !/sending incremental/ && !/sent.*received/ && !/total size/ && NF>0 && !/^$/ {count++; printf "[%d/%s] %s\n", count, total, $0}'
+        echo ""
+        echo "✅ Backup completed at $(date)"
+      }
+
       echo "⏰ Starting backup scheduler..."
+      echo "💡 Tip: Trigger manual backup with: kubectl exec -it <pod> -c backup-config -- touch /tmp/trigger-backup"
       while true; do
-        # Get current time in seconds since epoch and current hour
-        current_epoch=$(date +%s)
+        # Check for manual trigger
+        if [ -f /tmp/trigger-backup ]; then
+          echo "🔔 Manual backup triggered!"
+          rm -f /tmp/trigger-backup
+          do_backup
+          continue
+        fi
+
+        # Get current time
         current_hour=$(date +%H | sed 's/^0//')
         current_min=$(date +%M | sed 's/^0//')
         current_sec=$(date +%S | sed 's/^0//')
@@ -76,19 +99,26 @@ Params:
           sleep_seconds=$((86400 - seconds_since_midnight + target_seconds))
         fi
         
-        echo "💤 Sleeping for $sleep_seconds seconds until 2 AM..."
-        sleep $sleep_seconds
-        
-        echo "🚀 Starting backup..."
-        mkdir -p /backup-dest/{{ $appName }}
-        # First, count total files
-        total=$(rsync -a --dry-run --stats --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/ | grep "Number of regular files transferred:" | awk '{print $6}')
-        echo "📊 Files to transfer: $total"
-        # Now do actual transfer with verbose output and counter
-        rsync -av --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/ | awk -v total="$total" 'BEGIN{count=0} !/\/$/ && !/sending incremental/ && !/sent.*received/ && !/total size/ && NF>0 && !/^$/ {count++; printf "[%d/%s] %s\n", count, total, $0}'
-        echo ""
-        echo "✅ Backup completed at $(date)"
-        sleep 60
+        echo "💤 Next scheduled backup in $sleep_seconds seconds (2 AM)..."
+
+        # Sleep in short intervals to check for manual trigger
+        elapsed=0
+        while [ $elapsed -lt $sleep_seconds ]; do
+          sleep 10
+          elapsed=$((elapsed + 10))
+          # Check for manual trigger during wait
+          if [ -f /tmp/trigger-backup ]; then
+            echo "🔔 Manual backup triggered!"
+            rm -f /tmp/trigger-backup
+            do_backup
+            break
+          fi
+        done
+
+        # If we completed the full wait (no manual trigger), do scheduled backup
+        if [ $elapsed -ge $sleep_seconds ]; then
+          do_backup
+        fi
       done
   volumeMounts:
     - name: config

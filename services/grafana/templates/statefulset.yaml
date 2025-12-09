@@ -31,6 +31,8 @@ spec:
       serviceAccountName: {{ include "grafana.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "grafana" "ConfigPath" "/var/lib/grafana") | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -55,18 +57,38 @@ spec:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
-            {{- if .Values.persistence.enabled }}
-            - name: storage
+            - name: config
               mountPath: /var/lib/grafana
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
             {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "grafana" "ConfigPath" "/var/lib/grafana") | nindent 8 }}
       volumes:
         - name: datasources
           configMap:
             name: {{ include "grafana.fullname" . }}-datasources
-        {{- if .Values.persistence.enabled }}
-        - name: storage
+        - name: config
+          emptyDir: {}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
           persistentVolumeClaim:
-            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{ else }}{{ include "grafana.fullname" . }}{{ end }}
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
