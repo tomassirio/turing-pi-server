@@ -20,6 +20,95 @@ spec:
           # Use ClusterFirst to resolve both internal K8s services and external domains
           dnsPolicy: "ClusterFirst"
           initContainers:
+            {{- if not .Values.skipWait }}
+            - name: wait-for-services
+              image: curlimages/curl:latest
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  TIMEOUT={{ .Values.waitTimeout | default 300 }}
+                  echo "⏳ Waiting for services to be ready (timeout: ${TIMEOUT}s)..."
+                  echo ""
+
+                  wait_for_service() {
+                    local name=$1
+                    local url=$2
+                    local elapsed=0
+                    local last_error=""
+                    local consecutive_fails=0
+
+                    echo "🔍 Checking $name at $url"
+                    while [ $elapsed -lt $TIMEOUT ]; do
+                      # Try to connect with detailed error output
+                      response=$(curl -sf -w "\nHTTP_CODE:%{http_code}" --max-time 5 "$url/ping" 2>&1 || echo "CURL_ERROR:$?")
+
+                      if echo "$response" | grep -q "HTTP_CODE:200"; then
+                        echo "  ✅ $name is ready!"
+                        echo ""
+                        return 0
+                      fi
+
+                      # Extract error information
+                      if echo "$response" | grep -q "Could not resolve host"; then
+                        current_error="DNS resolution failed"
+                      elif echo "$response" | grep -q "Connection refused"; then
+                        current_error="Connection refused (service may be down)"
+                      elif echo "$response" | grep -q "Connection timed out"; then
+                        current_error="Connection timeout"
+                      elif echo "$response" | grep -q "CURL_ERROR"; then
+                        current_error="Network error"
+                      else
+                        current_error="Service not responding"
+                      fi
+
+                      # Only print detailed errors every 30 seconds or when error changes
+                      if [ "$last_error" != "$current_error" ] || [ $((elapsed % 30)) -eq 0 ]; then
+                        echo "  ⏳ $name not ready: $current_error (${elapsed}s/${TIMEOUT}s elapsed)"
+                        last_error="$current_error"
+                      fi
+
+                      sleep 5
+                      elapsed=$((elapsed + 5))
+                      consecutive_fails=$((consecutive_fails + 1))
+
+                      # Provide helpful hints after extended failures
+                      if [ $consecutive_fails -eq 30 ]; then
+                        echo "  💡 $name has been unreachable for 2.5 minutes. Possible issues:"
+                        echo "     - Service is still restoring from backup (check restore-config logs)"
+                        echo "     - Service is crash-looping (check pod status and logs)"
+                        echo "     - Database migration is taking a long time"
+                        echo "     Consider: kubectl logs -n default -l app=$(echo $name | tr '[:upper:]' '[:lower:]') --tail=50"
+                      fi
+                    done
+
+                    echo "  ❌ TIMEOUT: $name did not become ready after ${TIMEOUT}s"
+                    echo "  📋 Troubleshooting:"
+                    echo "     1. Check pod status: kubectl get pods -n default | grep $(echo $name | tr '[:upper:]' '[:lower:]')"
+                    echo "     2. Check logs: kubectl logs -n default -l app=$(echo $name | tr '[:upper:]' '[:lower:]') -c $(echo $name | tr '[:upper:]' '[:lower:]')"
+                    echo "     3. See TROUBLESHOOTING_CONFIGARR.md for detailed debugging steps"
+                    echo ""
+                    return 1
+                  }
+
+                  {{- if .Values.config.sonarr.enabled }}
+                  wait_for_service "Sonarr" "{{ .Values.config.sonarr.baseUrl }}"
+                  {{- end }}
+
+                  {{- if .Values.config.radarr.enabled }}
+                  wait_for_service "Radarr" "{{ .Values.config.radarr.baseUrl }}"
+                  {{- end }}
+
+                  {{- if .Values.config.lidarr.enabled }}
+                  wait_for_service "Lidarr" "{{ .Values.config.lidarr.baseUrl }}"
+                  {{- end }}
+
+                  echo "🎉 All enabled services are ready!"
+                  echo "   Proceeding with Configarr execution..."
+                  echo ""
+            {{- else }}
+            # Skipping wait-for-services check (skipWait: true)
+            {{- end }}
             - name: fix-permissions
               image: busybox:latest
               command: ["/bin/sh", "-c"]
@@ -73,3 +162,4 @@ spec:
             - name: secret-volume
               secret:
                 secretName: {{ include "configarr.fullname" . }}-secret
+

@@ -49,8 +49,8 @@ ingress:
         - readarr.localhome.com
 
 env:
-  PUID: "911"
-  PGID: "911"
+  PUID: "1000"
+  PGID: "1000"
   TZ: "Europe/Amsterdam"
   UMASK: "002"
 
@@ -132,16 +132,14 @@ resources: {}
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
-  httpGet:
-    path: /
+  tcpSocket:
     port: 8787
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
 readinessProbe:
-  httpGet:
-    path: /
+  tcpSocket:
     port: 8787
   initialDelaySeconds: 10
   periodSeconds: 10
