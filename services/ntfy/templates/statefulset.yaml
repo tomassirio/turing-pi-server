@@ -26,6 +26,8 @@ spec:
       serviceAccountName: {{ include "ntfy.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "ntfy" "ConfigPath" "/var/cache/ntfy") | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -57,12 +59,41 @@ spec:
               readOnly: true
             - name: cache
               mountPath: {{ .Values.persistence.cache.mountPath }}
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "ntfy" "ConfigPath" "/var/cache/ntfy") | nindent 8 }}
       volumes:
         - name: config
           configMap:
             name: {{ include "ntfy.fullname" . }}
         - name: cache
+        {{- if eq .Values.persistence.cache.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.cache.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
