@@ -2,5 +2,11 @@ apiVersion: v2
 name: ntfy
 description: A Helm chart for ntfy
 type: application
+
+dependencies:
+  - name: common
+    version: 0.1.0
+    repository: file://../common
+
 version: 0.1.0
 appVersion: "2.15.0"

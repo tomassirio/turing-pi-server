@@ -30,11 +30,21 @@ ingress:
 persistence:
   cache:
     enabled: true
-    existingClaim: nas-config-pvc
+    type: emptyDir  # Use emptyDir like sonarr/radarr
     mountPath: /var/cache/ntfy
   config:
     enabled: true
     mountPath: /etc/ntfy
+  restore:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
 
 env:
   TZ: "Europe/Amsterdam"
@@ -64,5 +74,15 @@ serviceAccount:
   automount: true
   name: ""
 
-podSecurityContext: {}
-securityContext: {}
+# Run as ntfy user (UID 1000)
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
