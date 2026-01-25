@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "calibre-web.fullname" . }}
+  labels:
+    app: {{ include "calibre-web.name" . }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 8083
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "calibre-web.name" . }}

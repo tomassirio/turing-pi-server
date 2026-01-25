@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "calibre-web.fullname" . }}
+  labels:
+    app: {{ include "calibre-web.name" . }}
+spec:
+  serviceName: {{ include "calibre-web.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "calibre-web.name" . }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "calibre-web.name" . }}
+    spec:
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "calibre-web" "ConfigPath" "/config") | nindent 8 }}
+        - name: init-metadata-db
+          image: busybox:latest
+          command: ['sh', '-c', 'if [ ! -f /books/metadata.db ]; then echo "Downloading metadata.db..."; wget -O /books/metadata.db https://github.com/janeczku/calibre-web/raw/master/library/metadata.db; chmod 644 /books/metadata.db; else echo "metadata.db exists"; fi']
+          volumeMounts:
+            - name: books
+              mountPath: /books
+      containers:
+        - name: calibre-web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+            {{- if .Values.env.DOCKER_MODS }}
+            - name: DOCKER_MODS
+              value: "{{ .Values.env.DOCKER_MODS }}"
+            {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: books
+              mountPath: /books
+            - name: config
+              mountPath: /config
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "calibre-web" "ConfigPath" "/config") | nindent 8 }}
+      volumes:
+        - name: books
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.books.existingClaim }}
+        - name: config
+        {{- if eq .Values.persistence.config.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
