@@ -100,6 +100,16 @@ persistence:
   data:
     enabled: true
     type: emptyDir
+  restore:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
 
 nodeSelector: {}
   # kubernetes.io/hostname: turing-01

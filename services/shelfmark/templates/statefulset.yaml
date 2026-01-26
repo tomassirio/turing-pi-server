@@ -32,6 +32,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "shelfmark" "ConfigPath" "/config") | nindent 8 }}
         - name: init-data
           image: busybox:latest
           command: ['sh', '-c', 'if [ ! -f /app/data/book-languages.json ]; then echo "Creating book-languages.json..."; echo "{}" > /app/data/book-languages.json; chmod 644 /app/data/book-languages.json; else echo "book-languages.json exists"; fi']
@@ -78,6 +79,21 @@ spec:
               mountPath: /config
             - name: data
               mountPath: /app/data
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "shelfmark" "ConfigPath" "/config") | nindent 8 }}
       volumes:
         - name: books
           persistentVolumeClaim:
@@ -95,5 +111,15 @@ spec:
         {{- else }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.data.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
         {{- end }}
 
