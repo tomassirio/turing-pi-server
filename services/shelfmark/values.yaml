@@ -36,8 +36,10 @@ env:
   PGID: "1000"
   TZ: "Europe/Amsterdam"
   PORT: "8084"
-  CALIBRE_WEB_URL: "http://calibre-web.localhome.com"
+  CALIBRE_WEB_URL: "http://audiobookshelf.localhome.com"
   NODE_ENV: "production"
+  CALIBRE_PATH: "/mnt/nas/media/books"
+  DOWNLOAD_PATH: "/mnt/nas/torrents/books"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -90,14 +92,14 @@ autoscaling:
   enabled: false
 
 persistence:
-  books:
+  media:
     enabled: true
     existingClaim: nas-pvc
-    mountPath: /books
+    mountPath: /mnt/nas
   config:
     enabled: true
     type: emptyDir
-  data:
+  appdata:
     enabled: true
     type: emptyDir
   restore:
