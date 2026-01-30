@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "audiobookshelf.fullname" . }}
+  labels:
+    app: {{ include "audiobookshelf.name" . }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.webuiPort }}
+  selector:
+    app: {{ include "audiobookshelf.name" . }}
+

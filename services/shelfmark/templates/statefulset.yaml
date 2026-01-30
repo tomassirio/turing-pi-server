@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "shelfmark.fullname" . }}
+  labels:
+    app: {{ include "shelfmark.name" . }}
+spec:
+  serviceName: {{ include "shelfmark.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "shelfmark.name" . }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ include "shelfmark.name" . }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "shelfmark" "ConfigPath" "/config") | nindent 8 }}
+        - name: init-data
+          image: busybox:latest
+          command: ['sh', '-c', 'if [ ! -f /app/data/book-languages.json ]; then echo "Creating book-languages.json..."; echo "{}" > /app/data/book-languages.json; chmod 644 /app/data/book-languages.json; else echo "book-languages.json exists"; fi']
+          volumeMounts:
+            - name: appdata
+              mountPath: /app/data
+      containers:
+        - name: shelfmark
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.webuiPort }}
+          env:
+            - name: PUID
+              value: "{{ .Values.env.PUID }}"
+            - name: PGID
+              value: "{{ .Values.env.PGID }}"
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+            - name: PORT
+              value: "{{ .Values.env.PORT }}"
+            - name: CALIBRE_WEB_URL
+              value: "{{ .Values.env.CALIBRE_WEB_URL }}"
+            - name: NODE_ENV
+              value: "{{ .Values.env.NODE_ENV }}"
+            {{- if .Values.env.CALIBRE_PATH }}
+            - name: CALIBRE_PATH
+              value: "{{ .Values.env.CALIBRE_PATH }}"
+            {{- end }}
+            {{- if .Values.env.DOWNLOAD_PATH }}
+            - name: DOWNLOAD_PATH
+              value: "{{ .Values.env.DOWNLOAD_PATH }}"
+            {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: media
+              mountPath: /mnt/nas
+            - name: config
+              mountPath: /config
+            - name: appdata
+              mountPath: /app/data
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "shelfmark" "ConfigPath" "/config") | nindent 8 }}
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.media.existingClaim }}
+        - name: config
+        {{- if eq .Values.persistence.config.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- end }}
+        - name: appdata
+        {{- if eq .Values.persistence.appdata.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.appdata.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
+

@@ -87,18 +87,18 @@ livenessProbe:
   httpGet:
     path: /
     port: 5055
-  initialDelaySeconds: 30
+  initialDelaySeconds: 120
   periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+  timeoutSeconds: 10
+  failureThreshold: 10
 readinessProbe:
   httpGet:
     path: /
     port: 5055
-  initialDelaySeconds: 10
+  initialDelaySeconds: 60
   periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+  timeoutSeconds: 10
+  failureThreshold: 10
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
