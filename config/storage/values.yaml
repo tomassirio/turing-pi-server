@@ -208,6 +208,16 @@ nas:
         storage: 1Ti
         accessMode: ReadWriteMany
         path: /volume1/Guests
+      - name: wanderer-command-thumbnails-pv
+        storage: 20Gi
+        accessMode: ReadWriteMany
+        path: /volume1/Wanderer/prod/thumbnails
+        namespace: wanderer
+      - name: wanderer-command-dev-thumbnails-pv
+        storage: 20Gi
+        accessMode: ReadWriteMany
+        path: /volume1/Wanderer/dev/thumbnails
+        namespace: wanderer-dev
     config:
       - name: nas-config-pv
         storage: 10Gi
@@ -223,6 +233,16 @@ nas:
         storage: 1Ti
         accessMode: ReadWriteMany
         persistentVolumeName: nas-guests-pv
+      - name: wanderer-command-thumbnails-pvc
+        storage: 200Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: wanderer-command-thumbnails-pv
+        namespace: wanderer
+      - name: wanderer-command-dev-thumbnails-pvc
+        storage: 20Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: wanderer-command-dev-thumbnails-pv
+        namespace: wanderer-dev
     config:
       - name: nas-config-pvc
         storage: 10Gi
