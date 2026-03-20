@@ -209,7 +209,7 @@ nas:
         accessMode: ReadWriteMany
         path: /volume1/Guests
       - name: wanderer-command-thumbnails-pv
-        storage: 20Gi
+        storage: 200Gi
         accessMode: ReadWriteMany
         path: /volume1/Wanderer/prod/thumbnails
         namespace: wanderer
