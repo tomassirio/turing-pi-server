@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "prometheus.fullname" . }}-wanderer-production-scrape-config
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+    project: wanderer
+    environment: production
+data:
+  wanderer-production-scrape-config.yml: |
+    # Wanderer Backend - Production Environment
+    # Namespace: wanderer
+    # Team: Wanderer
+    
+    # Wanderer Auth Service
+    - job_name: 'wanderer-auth-prod'
+      metrics_path: '/actuator/prometheus'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+      static_configs:
+        - targets: ['wanderer-auth.wanderer.svc.cluster.local:8083']
+          labels:
+            project: 'wanderer'
+            application: 'wanderer-auth'
+            environment: 'production'
+            namespace: 'wanderer'
+            component: 'auth'
+
+    # Wanderer Command Service
+    - job_name: 'wanderer-command-prod'
+      metrics_path: '/actuator/prometheus'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+      static_configs:
+        - targets: ['wanderer-command.wanderer.svc.cluster.local:8081']
+          labels:
+            project: 'wanderer'
+            application: 'wanderer-command'
+            environment: 'production'
+            namespace: 'wanderer'
+            component: 'command'
+
+    # Wanderer Query Service
+    - job_name: 'wanderer-query-prod'
+      metrics_path: '/actuator/prometheus'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+      static_configs:
+        - targets: ['wanderer-query.wanderer.svc.cluster.local:8082']
+          labels:
+            project: 'wanderer'
+            application: 'wanderer-query'
+            environment: 'production'
+            namespace: 'wanderer'
+            component: 'query'
