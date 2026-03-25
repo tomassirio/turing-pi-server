@@ -1,0 +1,43 @@
+# Wanderer Backend - Development Environment
+# Namespace: wanderer-dev
+#
+# Copy this content into the main configmap.yaml under scrape_configs section
+
+- job_name: 'wanderer-auth-dev'
+  metrics_path: '/actuator/prometheus'
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  static_configs:
+    - targets: ['wanderer-auth-dev.wanderer-dev.svc.cluster.local:8083']
+      labels:
+        project: 'wanderer'
+        application: 'wanderer-auth'
+        environment: 'development'
+        namespace: 'wanderer-dev'
+        component: 'auth'
+
+- job_name: 'wanderer-command-dev'
+  metrics_path: '/actuator/prometheus'
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  static_configs:
+    - targets: ['wanderer-command-dev.wanderer-dev.svc.cluster.local:8081']
+      labels:
+        project: 'wanderer'
+        application: 'wanderer-command'
+        environment: 'development'
+        namespace: 'wanderer-dev'
+        component: 'command'
+
+- job_name: 'wanderer-query-dev'
+  metrics_path: '/actuator/prometheus'
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  static_configs:
+    - targets: ['wanderer-query-dev.wanderer-dev.svc.cluster.local:8082']
+      labels:
+        project: 'wanderer'
+        application: 'wanderer-query'
+        environment: 'development'
+        namespace: 'wanderer-dev'
+        component: 'query'
