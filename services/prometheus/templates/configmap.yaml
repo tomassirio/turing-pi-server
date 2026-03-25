@@ -10,11 +10,205 @@ data:
       scrape_interval: 15s
       evaluation_interval: 15s
 
-    # Load scrape configurations from separate files
-    # Organized by folders: core/, kubernetes/, <project>/
-    scrape_config_files:
-      - /etc/prometheus/scrape-configs/core-scrape-config.yml
-      - /etc/prometheus/scrape-configs/kubernetes-discovery-config.yml
-      - /etc/prometheus/scrape-configs/wanderer-production-scrape-config.yml
-      - /etc/prometheus/scrape-configs/wanderer-development-scrape-config.yml
+    # All scrape configurations organized by folders
+    scrape_configs:
+      # Core - Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+            labels:
+              component: 'prometheus'
+              type: 'monitoring'
+
+      # Core - Kube-state-metrics
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics:8080']
+            labels:
+              component: 'kube-state-metrics'
+              type: 'monitoring'
+
+      # Kubernetes - API Server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes - Nodes (kubelet)
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics
+
+      # Kubernetes - Nodes (cadvisor)
+      - job_name: 'kubernetes-nodes-cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+      # Kubernetes - Auto-discover pods
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      # Kubernetes - Auto-discover services
+      - job_name: 'kubernetes-services'
+        kubernetes_sd_configs:
+          - role: service
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_service_name
+
+      # Wanderer - Production
+      - job_name: 'wanderer-auth-prod'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-auth.wanderer.svc.cluster.local:8083']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-auth'
+              environment: 'production'
+              namespace: 'wanderer'
+              component: 'auth'
+
+      - job_name: 'wanderer-command-prod'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-command.wanderer.svc.cluster.local:8081']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-command'
+              environment: 'production'
+              namespace: 'wanderer'
+              component: 'command'
+
+      - job_name: 'wanderer-query-prod'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-query.wanderer.svc.cluster.local:8082']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-query'
+              environment: 'production'
+              namespace: 'wanderer'
+              component: 'query'
+
+      # Wanderer - Development
+      - job_name: 'wanderer-auth-dev'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-auth-dev.wanderer-dev.svc.cluster.local:8083']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-auth'
+              environment: 'development'
+              namespace: 'wanderer-dev'
+              component: 'auth'
+
+      - job_name: 'wanderer-command-dev'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-command-dev.wanderer-dev.svc.cluster.local:8081']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-command'
+              environment: 'development'
+              namespace: 'wanderer-dev'
+              component: 'command'
+
+      - job_name: 'wanderer-query-dev'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['wanderer-query-dev.wanderer-dev.svc.cluster.local:8082']
+            labels:
+              project: 'wanderer'
+              application: 'wanderer-query'
+              environment: 'development'
+              namespace: 'wanderer-dev'
+              component: 'query'
 
