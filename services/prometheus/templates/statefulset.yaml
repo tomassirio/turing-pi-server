@@ -51,6 +51,18 @@ spec:
             - name: config-volume
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
+            - name: core-scrape-config
+              mountPath: /etc/prometheus/scrape-configs/core-scrape-config.yml
+              subPath: core-scrape-config.yml
+            - name: kubernetes-discovery-config
+              mountPath: /etc/prometheus/scrape-configs/kubernetes-discovery-config.yml
+              subPath: kubernetes-discovery-config.yml
+            - name: wanderer-production-scrape-config
+              mountPath: /etc/prometheus/scrape-configs/wanderer-production-scrape-config.yml
+              subPath: wanderer-production-scrape-config.yml
+            - name: wanderer-development-scrape-config
+              mountPath: /etc/prometheus/scrape-configs/wanderer-development-scrape-config.yml
+              subPath: wanderer-development-scrape-config.yml
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -62,6 +74,18 @@ spec:
         - name: config-volume
           configMap:
             name: {{ include "prometheus.fullname" . }}-config
+        - name: core-scrape-config
+          configMap:
+            name: {{ include "prometheus.fullname" . }}-core-scrape-config
+        - name: kubernetes-discovery-config
+          configMap:
+            name: {{ include "prometheus.fullname" . }}-kubernetes-discovery-config
+        - name: wanderer-production-scrape-config
+          configMap:
+            name: {{ include "prometheus.fullname" . }}-wanderer-production-scrape-config
+        - name: wanderer-development-scrape-config
+          configMap:
+            name: {{ include "prometheus.fullname" . }}-wanderer-development-scrape-config
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
