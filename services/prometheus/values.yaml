@@ -105,23 +105,21 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 persistence:
-  enabled: true
+  enabled: false
   accessMode: ReadWriteOnce
   size: 10Gi
   # storageClass: "-"
 
 # Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+volumes:
+  - name: storage-volume
+    persistentVolumeClaim:
+      claimName: prometheus-pvc
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+volumeMounts:
+  - name: storage-volume
+    mountPath: /prometheus
 
 nodeSelector: {}
 

@@ -158,6 +158,10 @@ nfs:
         storage: 5Gi
         accessMode: ReadWriteOnce
         path: /mnt/ssd/factorio
+      - name: prometheus-pv
+        storage: 10Gi
+        accessMode: ReadWriteOnce
+        path: /mnt/ssd/prometheus
   pvc:
     data:
       - name: nfs-pvc
@@ -194,6 +198,10 @@ nfs:
         accessMode: ReadWriteOnce
         persistentVolumeName: factorio-pv
         namespace: factorio
+      - name: prometheus-pvc
+        storage: 10Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: prometheus-pv
 
 nas:
   pv:
