@@ -77,14 +77,15 @@ persistence:
     existingClaim: nas-pvc
   config:
     enabled: true
-    type: emptyDir
+    existingClaim: nas-config-pvc
+    subPath: qbittorrent
   restore:
-    enabled: true
+    enabled: false
     existingClaim: nas-config-pvc
     mountPath: /restore-source
     readOnly: true
   backup:
-    enabled: true
+    enabled: false
     existingClaim: nas-config-pvc
     mountPath: /backup-dest
     readOnly: false
@@ -97,11 +98,8 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/service-upstream: "true"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-  tls:
-    - secretName: localhome-tls
-      hosts:
-        - qbittorrent.localhome.com
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  tls: []
 
 env:
   PUID: "1000"

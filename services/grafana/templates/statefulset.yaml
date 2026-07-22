@@ -32,7 +32,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "grafana" "ConfigPath" "/var/lib/grafana") | nindent 8 }}
+        {{- end }}
         - name: fix-permissions
           image: busybox:latest
           command: ["/bin/sh", "-c"]
@@ -87,7 +89,9 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "grafana" "ConfigPath" "/var/lib/grafana") | nindent 8 }}
+        {{- end }}
       volumes:
         - name: datasources
           configMap:

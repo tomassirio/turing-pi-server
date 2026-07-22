@@ -20,7 +20,9 @@ spec:
         app: {{ include "radarr.name" . }}
     spec:
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "radarr" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       containers:
         - name: radarr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -63,7 +65,9 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "radarr" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       {{- if .Values.additionalContainers }}
         {{- toYaml .Values.additionalContainers | nindent 8 }}
       {{- end }}

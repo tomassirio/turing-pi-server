@@ -19,8 +19,12 @@ spec:
       labels:
         app: {{ include "audiobookshelf.name" . }}
     spec:
+      imagePullSecrets:
+        - name: regcred
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "audiobookshelf" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
         - name: init-library
           image: busybox:latest
           command: ['sh', '-c', 'mkdir -p /data/media/books /data/torrents/books && echo "Library directories created"']
@@ -72,7 +76,9 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "audiobookshelf" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       volumes:
         - name: data
           persistentVolumeClaim:

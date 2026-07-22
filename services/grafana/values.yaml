@@ -23,14 +23,17 @@ podSecurityContext: {}
 
 persistence:
   enabled: true
+  existingClaim: nas-config-pvc
+  subPath: grafana
   storageClassName: ""
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   size: 10Gi
   # existingClaim: "my-existing-claim"
   config:
     enabled: true
-    type: emptyDir
+    existingClaim: nas-config-pvc
+    subPath: grafana-config
   restore:
     enabled: true
     existingClaim: nas-config-pvc

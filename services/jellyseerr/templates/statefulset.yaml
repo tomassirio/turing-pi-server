@@ -32,7 +32,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "jellyseerr" "ConfigPath" "/app/config") | nindent 8 }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -67,7 +69,9 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "jellyseerr" "ConfigPath" "/app/config") | nindent 8 }}
+        {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

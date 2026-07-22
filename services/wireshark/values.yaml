@@ -1,0 +1,94 @@
+# Default values for wireshark.
+# This is a YAML-formatted file.
+# For a full list of options, see the linuxserver/wireshark documentation.
+
+replicaCount: 1
+
+image:
+  repository: lscr.io/linuxserver/wireshark
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Deploys as a StatefulSet to have a persistent identity.
+kind: StatefulSet
+
+# For PUID and PGID, see https://docs.linuxserver.io/general/understanding-puid-and-pgid
+# You can get the values by running `id your_user`
+env:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Etc/UTC"
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: ""
+
+# Service definition
+service:
+  type: ClusterIP
+  ports:
+    http:
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: wireshark.localhome.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+   - secretName: wireshark-tls
+     hosts:
+       - wireshark.localhome.com
+
+# Persistence configuration
+persistence:
+  config:
+    enabled: true
+    # storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+
+# Security context for the container
+# NET_ADMIN is required for packet capture
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
+
+# Use host networking to capture traffic from the host interface
+# This is powerful but can be a security risk.
+hostNetwork: false
+
+# Shared memory size
+shmSize: "1Gi"
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+
+# Resource requests and limits
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}

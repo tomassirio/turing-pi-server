@@ -1,0 +1,15 @@
+{{- if .Values.ingress.enabled }}
+Your Wireshark service is exposed at: https://{{ (first .Values.ingress.hosts).host }}
+{{- else if contains "LoadBalancer" .Values.service.type }}
+export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "wireshark.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo "Access Wireshark at: http://$SERVICE_IP:{{ .Values.service.port }}"
+{{- else if contains "NodePort" .Values.service.type }}
+export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "wireshark.fullname" . }})
+export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+echo "Access Wireshark at: http://$NODE_IP:$NODE_PORT"
+{{- else }}
+export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "wireshark.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+echo "Access Wireshark by forwarding the service port:"
+echo "kubectl port-forward $POD_NAME 8080:{{ .Values.service.ports.http.port }}"
+echo "Then open http://localhost:8080"
+{{- end }}

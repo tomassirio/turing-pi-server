@@ -1,0 +1,9 @@
+apiVersion: v2
+name: wireshark
+description: A Helm chart for deploying Wireshark
+
+type: application
+
+version: 0.1.0
+
+appVersion: "latest"
