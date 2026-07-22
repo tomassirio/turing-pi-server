@@ -16,7 +16,9 @@ spec:
         app: {{ include "prowlarr.name" . }}
     spec:
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "prowlarr" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       containers:
         - name: prowlarr
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -40,6 +42,9 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+              {{- if and .Values.persistence.config.subPath (not (eq .Values.persistence.config.type "emptyDir")) }}
+              subPath: {{ .Values.persistence.config.subPath }}
+              {{- end }}
             {{- if .Values.persistence.restore.enabled }}
             - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
               mountPath: {{ .Values.persistence.restore.mountPath }}
@@ -54,7 +59,9 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "prowlarr" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       volumes:
         - name: data
           persistentVolumeClaim:

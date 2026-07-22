@@ -19,20 +19,26 @@ spec:
       labels:
         app: {{ include "qbittorrent.name" . }}
     spec:
+      imagePullSecrets:
+        - name: regcred
       initContainers:
+        {{- if .Values.persistence.restore.enabled }}
         {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "qbittorrent" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
         - name: fix-permissions
           image: busybox:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
-              echo "🔧 Fixing permissions for qBittorrent (user 1000)..."
-              chown -R 1000:1000 /config 2>/dev/null || true
-              chmod -R u+rwX /config 2>/dev/null || true
-              echo "✅ Permissions fixed."
+              echo "🔧 Checking permissions for qBittorrent..."
+              mkdir -p /config 2>/dev/null || true
+              echo "✅ Config directory ready."
           volumeMounts:
             - name: config
               mountPath: /config
+              {{- if .Values.persistence.config.subPath }}
+              subPath: {{ .Values.persistence.config.subPath }}
+              {{- end }}
           securityContext:
             runAsUser: 0
       containers:
@@ -47,14 +53,14 @@ spec:
               value: "{{ .Values.env.PUID }}"
             - name: PGID
               value: "{{ .Values.env.PGID }}"
-          {{- with .Values.livenessProbe }}
-          livenessProbe:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.readinessProbe }}
-          readinessProbe:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+{{/*          {{- with .Values.livenessProbe }}*/}}
+{{/*          livenessProbe:*/}}
+{{/*            {{- toYaml . | nindent 12 }}*/}}
+{{/*          {{- end }}*/}}
+{{/*          {{- with .Values.readinessProbe }}*/}}
+{{/*          readinessProbe:*/}}
+{{/*            {{- toYaml . | nindent 12 }}*/}}
+{{/*          {{- end }}*/}}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -64,6 +70,9 @@ spec:
               mountPath: /data
             - name: config
               mountPath: /config
+              {{- if .Values.persistence.config.subPath }}
+              subPath: {{ .Values.persistence.config.subPath }}
+              {{- end }}
             {{- if .Values.persistence.restore.enabled }}
             - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
               mountPath: {{ .Values.persistence.restore.mountPath }}
@@ -128,13 +137,16 @@ spec:
       {{- if .Values.additionalContainers }}
         {{- toYaml .Values.additionalContainers | nindent 8 }}
       {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "qbittorrent" "ConfigPath" "/config") | nindent 8 }}
+        {{- end }}
       volumes:
         - name: root
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.root.existingClaim }}
         - name: config
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
         {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
         - name: restore
           persistentVolumeClaim:
