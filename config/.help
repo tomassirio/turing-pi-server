@@ -1,3 +1,22 @@
+# Cluster Node Management (Ansible + SOPS)
+
+## Re-adding or Provisioning a Worker Node
+Use these steps if a Raspberry Pi's SD card is wiped or if you are adding a fresh node to the cluster without touching the existing, healthy nodes.
+
+### 1. Target Node Prerequisites (The Pi Side)
+Before running Ansible, ensure the target Raspberry Pi has:
+* A static IP matching the inventory file (configured via router/DHCP reservation).
+* Your SSH public key copied over (`ssh-copy-id pi@<node-ip>`).
+* **Cgroups Enabled:** If your playbook doesn't handle it, append the following to `/boot/firmware/cmdline.txt` (all on one single line) and reboot:
+    ```text
+    cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
+    ```
+
+### 2. Update the SOPS Encrypted Inventory
+If the `k3s_version` needs updating to match the live cluster, or if IPs changed, open the encrypted inventory:
+```bash
+sops inventory.yml
+
 # Install Metallb
 helm repo add metallb https://metallb.github.io/metallb
 
