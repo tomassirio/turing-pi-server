@@ -1,0 +1,6 @@
+apiVersion: v2
+name: registry-cache
+description: Pull-through registry mirrors (Docker Hub, GHCR, lscr.io) backed by NAS storage
+type: application
+version: 0.1.0
+appVersion: "2"

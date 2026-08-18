@@ -1,0 +1,18 @@
+# k3s containerd registry mirror config.
+# Deploy to /etc/rancher/k3s/registries.yaml on every node (server + agents),
+# then restart k3s (server) / k3s-agent (agents) to pick it up.
+# Each entry tries the local NAS-backed cache first, falling back to the
+# real registry if the cache is unreachable.
+mirrors:
+  docker.io:
+    endpoint:
+      - "http://192.168.2.210:5000"
+      - "https://registry-1.docker.io"
+  ghcr.io:
+    endpoint:
+      - "http://192.168.2.211:5000"
+      - "https://ghcr.io"
+  lscr.io:
+    endpoint:
+      - "http://192.168.2.212:5000"
+      - "https://lscr.io"

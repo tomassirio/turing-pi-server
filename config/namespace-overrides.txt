@@ -1,0 +1,14 @@
+# service <space> namespace
+# Services not listed here deploy to the caller's default namespace.
+# Read by scripts/deploy-services.sh and .github/workflows/helm-deploy.yaml —
+# keep both in sync by only editing this file.
+factorio factorio
+minecraft minecraft
+image-cleanup configs
+configarr configs
+registry-cache configs
+kube-state-metrics configs
+prometheus configs
+grafana configs
+cloudflared configs
+twingate configs

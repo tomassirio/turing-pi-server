@@ -36,12 +36,12 @@ persistence:
     subPath: grafana-config
   restore:
     enabled: true
-    existingClaim: nas-config-pvc
+    existingClaim: configs-config-pvc
     mountPath: /restore-source
     readOnly: true
   backup:
     enabled: true
-    existingClaim: nas-config-pvc
+    existingClaim: configs-config-pvc
     mountPath: /backup-dest
     readOnly: false
 

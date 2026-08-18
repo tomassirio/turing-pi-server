@@ -158,7 +158,6 @@ jobs:
     if: needs.detect-infra.outputs.has-changes == 'true' && !startsWith(github.event.head_commit.message, '[skip-deploy]')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
-      environment: prod
       namespace: default
       changed-services: ${{ needs.detect-infra.outputs.changed-infra }}
       deploy-all: false
@@ -176,7 +175,6 @@ jobs:
       (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
     uses: ./.github/workflows/helm-deploy.yaml
     with:
-      environment: prod
       namespace: default
       changed-services: ${{ needs.detect-services.outputs.changed-services }}
       deploy-all: false

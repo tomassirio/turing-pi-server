@@ -1,0 +1,30 @@
+# Each entry runs its own registry:2 in pull-through cache mode (proxy.remoteurl),
+# since a single registry:2 instance can only proxy one upstream.
+mirrors:
+  - name: docker-hub
+    remoteURL: https://registry-1.docker.io
+    existingClaim: registry-cache-docker-pvc
+    loadBalancerIP: 192.168.2.210
+  - name: ghcr
+    remoteURL: https://ghcr.io
+    existingClaim: registry-cache-ghcr-pvc
+    loadBalancerIP: 192.168.2.211
+  - name: lscr
+    remoteURL: https://lscr.io
+    existingClaim: registry-cache-lscr-pvc
+    loadBalancerIP: 192.168.2.212
+
+image:
+  repository: registry
+  tag: "2"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+    ephemeral-storage: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+    ephemeral-storage: 512Mi
