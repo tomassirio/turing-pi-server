@@ -1,6 +1,6 @@
 ---
-# Ensures OS packages the cluster depends on are present on every node.
-# Run with the same inventory used for k3s-ansible:
+# Ensures OS-level state the cluster depends on is present and bounded on
+# every node. Run with the same inventory used for k3s-ansible:
 #   ansible-playbook -i config/inventory.yml config/prerequisites.yml --ask-become-pass
 - hosts: k3s_cluster
   become: true
@@ -10,3 +10,32 @@
         name: nfs-common
         state: present
         update_cache: true
+
+    - name: Ensure journald drop-in directory exists
+      file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: Cap systemd-journald disk usage
+      # These are tiny SD-card root disks (~7GB on most nodes) shared with
+      # container images and every pod's ephemeral storage. An unbounded
+      # journal quietly ate 500MB+ on some nodes and contributed to the
+      # disk-pressure eviction cascade.
+      copy:
+        dest: /etc/systemd/journald.conf.d/size-cap.conf
+        content: |
+          [Journal]
+          SystemMaxUse=150M
+        mode: "0644"
+      notify: restart journald
+
+    - name: Clean apt package cache
+      apt:
+        autoclean: true
+
+  handlers:
+    - name: restart journald
+      systemd:
+        name: systemd-journald
+        state: restarted
