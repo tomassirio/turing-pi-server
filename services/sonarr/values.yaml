@@ -174,4 +174,14 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+# TEMPORARY: turing-05 is missing nfs-common, breaking NFS mounts there.
+# Remove this once config/prerequisites.yml has been run against it.
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: NotIn
+              values:
+                - turing-05
