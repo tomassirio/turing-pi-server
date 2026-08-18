@@ -102,7 +102,6 @@ additionalContainers:
     volumeMounts:
       - name: config
         mountPath: /config
-        subPath: radarr
         readOnly: true
 
 podLabels: {}

@@ -101,7 +101,6 @@ additionalContainers:
     volumeMounts:
       - name: config
         mountPath: /config
-        subPath: sonarr
         readOnly: true
 
 podLabels: {}
