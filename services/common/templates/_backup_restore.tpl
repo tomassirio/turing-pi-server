@@ -29,6 +29,10 @@ Params:
       else
         echo "⚠️ No backup found at /restore-source/{{ $appName }}, starting fresh."
       fi
+      # rsync preserves the backup's original permission bits, which may
+      # predate fsGroup or a different runAsUser. Force group-writable so
+      # the app container (running as its own fsGroup) can always write.
+      chmod -R g+rwX {{ $configPath }}
       exit 0
   resources:
     requests:
