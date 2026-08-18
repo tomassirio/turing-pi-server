@@ -1,0 +1,12 @@
+---
+# Ensures OS packages the cluster depends on are present on every node.
+# Run with the same inventory used for k3s-ansible:
+#   ansible-playbook -i config/inventory.yml config/prerequisites.yml --ask-become-pass
+- hosts: k3s_cluster
+  become: true
+  tasks:
+    - name: Ensure nfs-common is installed (required for NFS-backed PVs)
+      apt:
+        name: nfs-common
+        state: present
+        update_cache: true
