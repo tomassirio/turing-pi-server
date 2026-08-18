@@ -132,7 +132,6 @@ persistence:
 volumeMounts:
   - name: config
     mountPath: /config
-    subPath: cleanuparr
 
 volumes:
   - name: config
