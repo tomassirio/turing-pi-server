@@ -29,9 +29,11 @@ resources:
   requests:
     cpu: 10m
     memory: 64Mi
+    ephemeral-storage: 128Mi
   limits:
     cpu: 100m
     memory: 128Mi
+    ephemeral-storage: 512Mi
 
 # Node selector for scheduling
 nodeSelector: {}

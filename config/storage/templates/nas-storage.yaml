@@ -20,6 +20,10 @@ spec:
   accessModes:
     - {{ .accessMode }}
   persistentVolumeReclaimPolicy: {{ $reclaimPolicy }}
+  mountOptions:
+    - soft
+    - timeo=50
+    - retrans=3
   nfs:
     path: {{ .path }}
     server: {{ $server }}

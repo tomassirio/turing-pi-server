@@ -39,10 +39,12 @@ podAnnotations: {}
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  fsGroup: 1000
 
-securityContext: {}
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
   # capabilities:
   #   drop:
   #   - ALL
@@ -82,6 +84,12 @@ env:
   PGID: "911"
   TZ: "Europe/Amsterdam"
 
+resources:
+  requests:
+    ephemeral-storage: 256Mi
+  limits:
+    ephemeral-storage: 1Gi
+
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
@@ -115,12 +123,12 @@ persistence:
     existingClaim: nas-config-pvc
     subPath: jellyseerr
   restore:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /restore-source
     readOnly: true
   backup:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /backup-dest
     readOnly: false
@@ -135,8 +143,7 @@ volumeMounts:
 
 volumes:
   - name: config
-    persistentVolumeClaim:
-      claimName: nas-config-pvc
+    emptyDir: {}
   - name: data
     persistentVolumeClaim:
       claimName: nas-pvc

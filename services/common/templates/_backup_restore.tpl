@@ -69,56 +69,22 @@ Manual backup trigger:
         echo "✅ Backup completed at $(date)"
       }
 
-      echo "⏰ Starting backup scheduler..."
+      echo "⏰ Starting backup scheduler (every {{ .Values.persistence.backup.intervalSeconds | default 3600 }}s)..."
       echo "💡 Tip: Trigger manual backup with: kubectl exec -it <pod> -c backup-config -- touch /tmp/trigger-backup"
+      do_backup
       while true; do
-        # Check for manual trigger
-        if [ -f /tmp/trigger-backup ]; then
-          echo "🔔 Manual backup triggered!"
-          rm -f /tmp/trigger-backup
-          do_backup
-          continue
-        fi
-
-        # Get current time
-        current_hour=$(date +%H | sed 's/^0//')
-        current_min=$(date +%M | sed 's/^0//')
-        current_sec=$(date +%S | sed 's/^0//')
-        
-        # Calculate seconds since midnight today
-        seconds_since_midnight=$((current_hour * 3600 + current_min * 60 + current_sec))
-        
-        # Target is 2 AM (7200 seconds since midnight)
-        target_seconds=7200
-        
-        if [ $seconds_since_midnight -lt $target_seconds ]; then
-          # Before 2 AM today - wait until 2 AM today
-          sleep_seconds=$((target_seconds - seconds_since_midnight))
-        else
-          # After 2 AM - wait until 2 AM tomorrow (86400 = seconds in a day)
-          sleep_seconds=$((86400 - seconds_since_midnight + target_seconds))
-        fi
-        
-        echo "💤 Next scheduled backup in $sleep_seconds seconds (2 AM)..."
-
-        # Sleep in short intervals to check for manual trigger
         elapsed=0
-        while [ $elapsed -lt $sleep_seconds ]; do
-          sleep 10
-          elapsed=$((elapsed + 10))
-          # Check for manual trigger during wait
+        while [ $elapsed -lt {{ .Values.persistence.backup.intervalSeconds | default 3600 }} ]; do
           if [ -f /tmp/trigger-backup ]; then
             echo "🔔 Manual backup triggered!"
             rm -f /tmp/trigger-backup
             do_backup
-            break
+            elapsed=0
           fi
+          sleep 10
+          elapsed=$((elapsed + 10))
         done
-
-        # If we completed the full wait (no manual trigger), do scheduled backup
-        if [ $elapsed -ge $sleep_seconds ]; then
-          do_backup
-        fi
+        do_backup
       done
   volumeMounts:
     - name: config

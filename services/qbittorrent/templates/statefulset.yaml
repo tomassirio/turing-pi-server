@@ -145,8 +145,12 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.root.existingClaim }}
         - name: config
+        {{- if eq .Values.persistence.config.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- end }}
         {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
         - name: restore
           persistentVolumeClaim:

@@ -49,7 +49,11 @@ persistence:
 env:
   TZ: "Europe/Amsterdam"
 
-resources: {}
+resources:
+  requests:
+    ephemeral-storage: 128Mi
+  limits:
+    ephemeral-storage: 512Mi
 
 # This is to setup the liveness and readiness probes
 livenessProbe:

@@ -134,6 +134,8 @@ spec:
               env:
                 - name: TZ
                   value: {{ .Values.env.TZ | quote }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
               volumeMounts:
                 # Cache repositories
                 - name: repos
