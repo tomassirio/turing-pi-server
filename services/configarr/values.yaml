@@ -22,6 +22,12 @@ restartPolicy: Never
 env:
   TZ: "Europe/Amsterdam"
 
+resources:
+  requests:
+    ephemeral-storage: 128Mi
+  limits:
+    ephemeral-storage: 512Mi
+
 # Persistence configuration
 persistence:
   repos:

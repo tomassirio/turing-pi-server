@@ -31,6 +31,8 @@ spec:
               value: "{{ .Values.env.PGID }}"
             - name: TZ
               value: "{{ .Values.env.TZ }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

@@ -50,15 +50,16 @@ persistence:
     existingClaim: nas-pvc
   config:
     enabled: true
+    type: emptyDir
     existingClaim: nas-config-pvc
     subPath: prowlarr
   restore:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /restore-source
     readOnly: true
   backup:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /backup-dest
     readOnly: false
@@ -79,17 +80,11 @@ env:
   PGID: "911"
   TZ: "Europe/Amsterdam"
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-#   memory: 128Mi
+resources:
+  requests:
+    ephemeral-storage: 256Mi
+  limits:
+    ephemeral-storage: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:

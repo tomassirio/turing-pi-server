@@ -80,13 +80,11 @@ autoscaling:
   enabled: false
 
 # Resource requests and limits
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  requests:
+    ephemeral-storage: 256Mi
+  limits:
+    ephemeral-storage: 1Gi
 
 # Node selector and tolerations
 nodeSelector: {}

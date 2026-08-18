@@ -77,15 +77,16 @@ persistence:
     existingClaim: nas-pvc
   config:
     enabled: true
+    type: emptyDir
     existingClaim: nas-config-pvc
     subPath: qbittorrent
   restore:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /restore-source
     readOnly: true
   backup:
-    enabled: false
+    enabled: true
     existingClaim: nas-config-pvc
     mountPath: /backup-dest
     readOnly: false
@@ -109,9 +110,11 @@ resources:
   requests:
     cpu: 500m
     memory: 1Gi
+    ephemeral-storage: 256Mi
   limits:
     cpu: 2000m
     memory: 3Gi
+    ephemeral-storage: 1Gi
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:

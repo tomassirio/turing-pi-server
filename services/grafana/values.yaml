@@ -79,13 +79,11 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  requests:
+    ephemeral-storage: 256Mi
+  limits:
+    ephemeral-storage: 1Gi
 
 # This is to setup the liveness and readiness probes
 livenessProbe:
