@@ -87,9 +87,12 @@ env:
 
 resources:
   requests:
-    ephemeral-storage: 256Mi
+    ephemeral-storage: 512Mi
   limits:
-    ephemeral-storage: 1Gi
+    # lidarr's actual /config (db + album artwork cache for a large library)
+    # runs ~1.1Gi -- the previous 1Gi limit left ~zero headroom and the pod
+    # kept getting evicted for exceeding its own ephemeral-storage budget.
+    ephemeral-storage: 3Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
