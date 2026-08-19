@@ -2,7 +2,7 @@
   {{- $server := .pv.server }}
   {{- $reclaimPolicy := .pv.persistentVolumeReclaimPolicy }}
 
-  {{- range $type, $volumes := dict "data" .pv.data "config" .pv.config }}
+  {{- range $type, $volumes := dict "data" .pv.data "config" .pv.config "cache" .pv.cache }}
     {{- range $volumes }}
 ---
 apiVersion: v1
@@ -30,7 +30,7 @@ spec:
     {{- end }}
   {{- end }}
 
-  {{- range $type, $pvcs := dict "data" .pvc.data "config" .pvc.config }}
+  {{- range $type, $pvcs := dict "data" .pvc.data "config" .pvc.config "cache" .pvc.cache }}
     {{- range $pvcs }}
 ---
 apiVersion: v1

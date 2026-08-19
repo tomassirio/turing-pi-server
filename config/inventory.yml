@@ -19,10 +19,10 @@ k3s_cluster:
         # - openssl rand -base64 64
         # - pwgen -s 64 1
         # You can use ansible-vault to encrypt this value / keep it secret.
-        token: ENC[AES256_GCM,data:MsDy2SPNOTF7OSxlnMe/5r7bVbcIKjomZ5qb2wX+V9d1mftMU4uXQSz7Ehr/zZ6vyEO3vKCc1v4wSe1wm8FGBDJYjCB0vh5ManiwMDAkLSJE49Wy/Gojwg==,iv:cUC98WC45VdrVQlVREc7+WkB/0ddOnZTebDG4sJakXw=,tag:YTkfmak5f0LF50SG5jkxBA==,type:str]
+        token: ENC[AES256_GCM,data:Nsw+AmFDtgqIq3Qwj5ZyJlhEEY3IgNy9KuEhe53/qFuYphkYpuxsfH9re2KL3uXl5WHxxSqk1Wc9NmupiPJ0BQED9e05Faf4QCrbekr/4BEjdL+sKnj+CPCM6QT0VG9hpbQYGqbMQ6N+INpj,iv:Katu+MDg8nbnI4rkocfAfdZnZynRwaAYwg/eJbyQRcA=,tag:brxW9DpeeBVsoEJuh2ZZLw==,type:str]
         api_endpoint: '{{ hostvars[groups[''server''][0]][''ansible_host''] | default(groups[''server''][0]) }}'
-        extra_server_args: ""
-        extra_agent_args: ""
+        extra_server_args: --kubelet-arg=image-gc-high-threshold=70 --kubelet-arg=image-gc-low-threshold=50
+        extra_agent_args: --kubelet-arg=image-gc-high-threshold=70 --kubelet-arg=image-gc-low-threshold=50
 sops:
     kms: []
     gcp_kms: []
@@ -38,8 +38,8 @@ sops:
             clBmbEdqeXNqMFdoMVAwM01nQklWQVUKFcojdFhhp+8smbkSJ/jgvDuDrQbHckGZ
             9WFeDVz1AfCPNxHYDJ6IkCZLg3Ntgdq4ymf+YAy8pwk+VYmIXAjk6g==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-07-03T09:37:45Z"
-    mac: ENC[AES256_GCM,data:EDjdU4R0SIrHo0A3dZbn+ZSUYbEaXUkkRW26I0wUofpD3QOlTDW3giC0y0+zTFrEhVic/sx3neAheEgLtvurwF3L5x9ICaOyibgy2HPePyXQiIvLCxv0ggeOoPenJ0u/PwWR7a2jIgmJqbQBG9gj4JFHGydrKd2EIM42DZp3m2A=,iv:R6yASgf/7lPyIZabJ8w47EPG3vM7yVorxy+D7GbL4Ww=,tag:LRDC1MnlK3dqaPFNHjKmrQ==,type:str]
+    lastmodified: "2026-08-19T07:57:31Z"
+    mac: ENC[AES256_GCM,data:MPRiQwNNuXSCf91t4ZK4EWc2vU0TaKVyhblPlpO353Uz0muAE0mdFVPAFurbE6lYBqGUnChkznwdplV+N75BctOWgIJr1YmKQ2K1IiDm2yTJg5F38fktTMs1pco6a/2109oMeaP6Mk6W52bWQkZNUcd5yw/yxYGdALYzMErdl3A=,iv:9JAbOZzekheLnQ3GAdFzrxW4RRE//TP/cwOQvq+/1bQ=,tag:IkfTfcrt59l8iz93U9vzHQ==,type:str]
     pgp: []
     encrypted_regex: ^(data|stringData|token|username|password|email|game_password|crt|key|FTP_USER_PASS)$
     version: 3.9.0

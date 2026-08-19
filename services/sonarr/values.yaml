@@ -98,10 +98,18 @@ additionalContainers:
     ports:
       - name: metrics
         containerPort: 9794
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+        ephemeral-storage: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+        ephemeral-storage: 256Mi
     volumeMounts:
       - name: config
         mountPath: /config
-        subPath: sonarr
         readOnly: true
 
 podLabels: {}

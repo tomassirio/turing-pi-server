@@ -3,10 +3,6 @@ name: Helm Deploy to Kubernetes
 on:
   workflow_call:
     inputs:
-      environment:
-        description: 'Deployment environment (dev, prod)'
-        required: true
-        type: string
       namespace:
         description: 'Kubernetes namespace'
         required: true
@@ -66,7 +62,7 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.services != '[]' && needs.prepare.outputs.services != ''
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: prod
     strategy:
       fail-fast: false
       matrix:
@@ -128,18 +124,29 @@ jobs:
             sops -d services/qbittorrent/secrets.yaml > /dev/null && echo "✓ SOPS working"
           fi
 
+      - name: Resolve namespace
+        id: ns
+        run: |
+          SERVICE="${{ matrix.service }}"
+          NAMESPACE="${{ inputs.namespace }}"
+          OVERRIDE_NS=$(awk -v s="$SERVICE" '$1 == s {print $2}' ./config/namespace-overrides.txt)
+          if [ -n "$OVERRIDE_NS" ]; then
+            NAMESPACE="$OVERRIDE_NS"
+          fi
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
+
       - name: Create namespace
         run: |
-          # Create namespace if it doesn't exist
-          kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
-          echo "✓ Namespace ${{ inputs.namespace }} ready"
+          kubectl create namespace ${{ steps.ns.outputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+          echo "✓ Namespace ${{ steps.ns.outputs.namespace }} ready"
 
       - name: Deploy ${{ matrix.service }}
         run: |
           SERVICE="${{ matrix.service }}"
-          
+          NAMESPACE="${{ steps.ns.outputs.namespace }}"
+
           echo "================================================"
-          echo "Deploying $SERVICE to ${{ inputs.namespace }}..."
+          echo "Deploying $SERVICE to $NAMESPACE..."
           echo "================================================"
           
           # Handle storage as a special case
@@ -158,7 +165,7 @@ jobs:
           if [ "$SERVICE" = "cluster-secrets" ]; then
             echo "🔐 Deploying cluster-secrets chart..."
             helm secrets upgrade --install cluster-secrets ./config/secrets \
-              --namespace "${{ inputs.namespace }}" \
+              --namespace "$NAMESPACE" \
               --create-namespace \
               --wait --timeout 5m \
               -f ./config/secrets/secrets.yaml
@@ -176,31 +183,12 @@ jobs:
           
           # Prepare Helm arguments
           HELM_ARGS=(
-            --namespace "${{ inputs.namespace }}"
+            --namespace "$NAMESPACE"
             --create-namespace
             --wait
             --timeout 5m
             -f ./config/global-values.yaml
           )
-          
-          # Override ingress host and storage for dev environment
-          if [ "${{ inputs.environment }}" = "dev" ]; then
-            echo "🔧 Setting dev ingress host: ${SERVICE}.localhome-dev.com"
-            HELM_ARGS+=(--set "ingress.host=${SERVICE}.localhome-dev.com")
-            HELM_ARGS+=(--set "ingress.hosts[0].host=${SERVICE}.localhome-dev.com")
-            HELM_ARGS+=(--set "ingress.hosts[0].paths[0].path=/")
-            HELM_ARGS+=(--set "ingress.hosts[0].paths[0].pathType=ImplementationSpecific")
-            
-            echo "🔧 Setting dev storage (NFS instead of NAS)"
-            # Try all common patterns for different services
-            HELM_ARGS+=(--set "persistence.data.existingClaim=nfs-pvc")
-            HELM_ARGS+=(--set "persistence.config.existingClaim=nfs-config-pvc")
-            HELM_ARGS+=(--set "persistence.restore.existingClaim=nfs-config-pvc")
-            HELM_ARGS+=(--set "persistence.backup.existingClaim=nfs-config-pvc")
-            HELM_ARGS+=(--set "persistence.cache.existingClaim=nfs-config-pvc")
-            HELM_ARGS+=(--set "persistence.repos.existingClaim=nfs-config-pvc")
-            HELM_ARGS+=(--set "volumes[0].persistentVolumeClaim.claimName=nfs-config-pvc")
-          fi
           
           # Update dependencies
           echo "📦 Updating Helm dependencies..."
@@ -215,7 +203,7 @@ jobs:
             
             # Deploy with decrypted secrets
             helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
-              --namespace "${{ inputs.namespace }}" \
+              --namespace "$NAMESPACE" \
               "${HELM_ARGS[@]}" \
               -f "$SERVICE_PATH/secrets.dec.yaml"
             
@@ -224,7 +212,7 @@ jobs:
           else
             echo "📦 Deploying service with standard helm..."
             helm upgrade --install "$SERVICE" "$SERVICE_PATH" \
-              --namespace "${{ inputs.namespace }}" \
+              --namespace "$NAMESPACE" \
               "${HELM_ARGS[@]}"
           fi
           
@@ -234,19 +222,20 @@ jobs:
         if: failure()
         run: |
           SERVICE="${{ matrix.service }}"
+          NAMESPACE="${{ steps.ns.outputs.namespace }}"
           echo "=== $SERVICE logs ==="
-          
+
           # Get pod name
-          POD=$(kubectl get pods -l app=$SERVICE -n ${{ inputs.namespace }} -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
-          
+          POD=$(kubectl get pods -l app=$SERVICE -n $NAMESPACE -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+
           if [ -n "$POD" ]; then
             # Check for init container logs
             echo "--- Init container logs ---"
-            kubectl logs $POD -n ${{ inputs.namespace }} -c init-config --tail=50 2>/dev/null || echo "No init container or logs not available"
-            
+            kubectl logs $POD -n $NAMESPACE -c init-config --tail=50 2>/dev/null || echo "No init container or logs not available"
+
             echo ""
             echo "--- Main container logs ---"
-            kubectl logs $POD -n ${{ inputs.namespace }} --tail=50 || true
+            kubectl logs $POD -n $NAMESPACE --tail=50 || true
           else
             echo "Pod not found for service: $SERVICE"
           fi

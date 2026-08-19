@@ -1,0 +1,40 @@
+{{- range .Values.mirrors }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: registry-cache-{{ .name }}
+  labels:
+    app: registry-cache-{{ .name }}
+spec:
+  serviceName: registry-cache-{{ .name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry-cache-{{ .name }}
+  template:
+    metadata:
+      labels:
+        app: registry-cache-{{ .name }}
+    spec:
+      containers:
+        - name: registry
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REGISTRY_PROXY_REMOTEURL
+              value: {{ .remoteURL }}
+            - name: REGISTRY_STORAGE_DELETE_ENABLED
+              value: "false"
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/registry
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .existingClaim }}
+{{- end }}

@@ -1,0 +1,16 @@
+{{- range .Values.mirrors }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-cache-{{ .name }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .loadBalancerIP }}
+spec:
+  type: LoadBalancer
+  selector:
+    app: registry-cache-{{ .name }}
+  ports:
+    - port: 5000
+      targetPort: 5000
+{{- end }}

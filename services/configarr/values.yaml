@@ -32,7 +32,7 @@ resources:
 persistence:
   repos:
     # Repository cache storage
-    existingClaim: nas-config-pvc
+    existingClaim: configs-config-pvc
     subPath: configarr-repos
 
 # Configuration for *arr services

@@ -43,16 +43,12 @@ for serviceFolder in "$SERVICES_DIR"/*/; do
 
   GLOBAL_VALUES="$(dirname "$0")/config/global-values.yaml"
 
-  # Special namespace handling for specific services
+  # Namespace overrides live in config/namespace-overrides.txt (shared with CI)
   NAMESPACE_ARGS=""
-  if [ "$serviceName" == "factorio" ]; then
-    NAMESPACE_ARGS="--namespace factorio --create-namespace"
-    echo -e "${YELLOW}🎮  Deploying factorio to namespace: factorio${NC}"
-  fi
-
-  if [ "$serviceName" == "kube-state-metrics" ]; then
-    NAMESPACE_ARGS="--namespace kube-public --create-namespace"
-    echo -e "${YELLOW}🎮  Deploying kube-state-metrics to namespace: kube-public${NC}"
+  OVERRIDE_NS=$(awk -v s="$serviceName" '$1 == s {print $2}' "$(dirname "$0")/config/namespace-overrides.txt")
+  if [ -n "$OVERRIDE_NS" ]; then
+    NAMESPACE_ARGS="--namespace $OVERRIDE_NS --create-namespace"
+    echo -e "${YELLOW}🎮  Deploying $serviceName to namespace: $OVERRIDE_NS${NC}"
   fi
 
   if [ -f "$serviceFolder/secrets.yaml" ]; then

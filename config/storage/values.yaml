@@ -131,10 +131,6 @@ nfs:
         storage: 1Ti
         accessMode: ReadWriteMany
         path: /mnt/ssd/data
-      - name: nfs-pv-dev
-        storage: 1Ti
-        accessMode: ReadWriteMany
-        path: /mnt/ssd/data-dev
       - name: postgres-dev-pv
         storage: 50Gi
         accessMode: ReadWriteOnce
@@ -150,10 +146,6 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /mnt/ssd/config
-      - name: nfs-config-pv-dev
-        storage: 10Gi
-        accessMode: ReadWriteMany
-        path: /mnt/ssd/config-dev
       - name: factorio-pv
         storage: 5Gi
         accessMode: ReadWriteOnce
@@ -168,11 +160,6 @@ nfs:
         storage: 1Ti
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-pv
-      - name: nfs-pvc
-        storage: 1Ti
-        accessMode: ReadWriteMany
-        persistentVolumeName: nfs-pv-dev
-        namespace: turing-pi-dev
       - name: postgres-dev-pvc
         storage: 50Gi
         accessMode: ReadWriteOnce
@@ -188,11 +175,6 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteMany
         persistentVolumeName: nfs-config-pv
-      - name: nfs-config-pvc
-        storage: 10Gi
-        accessMode: ReadWriteMany
-        persistentVolumeName: nfs-config-pv-dev
-        namespace: turing-pi-dev
       - name: factorio-pvc
         storage: 5Gi
         accessMode: ReadWriteOnce
@@ -202,6 +184,7 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteOnce
         persistentVolumeName: prometheus-pv
+        namespace: configs
 
 nas:
   pv:
@@ -231,6 +214,23 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /volume1/docker/
+      - name: configs-config-pv
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        path: /volume1/docker/
+    cache:
+      - name: registry-cache-docker-pv
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        path: /volume1/docker/registry-cache/docker-hub
+      - name: registry-cache-ghcr-pv
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        path: /volume1/docker/registry-cache/ghcr
+      - name: registry-cache-lscr-pv
+        storage: 10Gi
+        accessMode: ReadWriteOnce
+        path: /volume1/docker/registry-cache/lscr
   pvc:
     data:
       - name: nas-pvc
@@ -256,5 +256,26 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         persistentVolumeName: nas-config-pv
+      - name: configs-config-pvc
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: configs-config-pv
+        namespace: configs
+    cache:
+      - name: registry-cache-docker-pvc
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: registry-cache-docker-pv
+        namespace: configs
+      - name: registry-cache-ghcr-pvc
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: registry-cache-ghcr-pv
+        namespace: configs
+      - name: registry-cache-lscr-pvc
+        storage: 10Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: registry-cache-lscr-pv
+        namespace: configs
 
 deploy: me

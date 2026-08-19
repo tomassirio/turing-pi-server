@@ -72,11 +72,15 @@ The k3s cluster is installed using Ansible and the [k3s-ansible](https://github.
     cd k3s-ansible
     ```
 
-3.  Run the ansible playbook with the `inventory.yml` from this repository. Make sure to replace `/path/to/turing-pi-server` with the actual path to this repository on your local machine.
+3.  **`config/inventory.yml` is encrypted with SOPS.** Ansible does not decrypt SOPS files on its own — running `ansible-playbook` directly against the encrypted file passes encrypted fields (like `token`) through as their literal ciphertext string, not the real value. This once broke the live cluster's k3s token and took down the control plane. Always decrypt to a temporary file first, run against that, then delete it:
 
     ```bash
-    ansible-playbook site.yml -i /path/to/turing-pi-server/config/inventory.yml
+    sops -d /path/to/turing-pi-server/config/inventory.yml > /tmp/inventory-plain.yml
+    ansible-playbook playbooks/site.yml -i /tmp/inventory-plain.yml
+    rm -f /tmp/inventory-plain.yml
     ```
+
+    (Note the playbook lives at `playbooks/site.yml` in newer checkouts of k3s-ansible, not `site.yml`.)
 
 ### ✅ The Prerequisites
 

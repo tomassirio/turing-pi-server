@@ -1,23 +1,16 @@
-name: Feature Branch Deploy to Dev
+name: Validate Helm Charts
 
 on:
-  push:
+  pull_request:
     branches:
-      - '**'
-      - '!main'
+      - main
     paths:
       - 'services/**'
+      - 'config/**'
       - '.github/workflows/**'
-  workflow_dispatch:
-    inputs:
-      skip-dev:
-        description: 'Skip dev deployment'
-        required: false
-        type: boolean
-        default: false
 
 jobs:
-  detect-services:
+  detect-changes:
     runs-on: ubuntu-latest
     outputs:
       changed-services: ${{ steps.changes.outputs.services }}
@@ -31,154 +24,91 @@ jobs:
       - name: Detect changed services
         id: changes
         run: |
-          # Get the list of changed files
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
-          else
-            # For push events, compare with main branch or use all commits in push
-            if git rev-parse origin/main >/dev/null 2>&1; then
-              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
-            else
-              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-            fi
-          fi
-          
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
           echo "Changed files:"
           echo "$CHANGED_FILES"
-          
-          # Extract unique service names from changed files in services/ directory
-          CHANGED_SERVICES=$(echo "$CHANGED_FILES" | \
-            grep "^services/" | \
-            cut -d'/' -f2 | \
-            grep -v "archived\|testing\|common" | \
-            sort -u | \
-            jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
-          echo "Changed services: $CHANGED_SERVICES"
-          
-          if [ "$CHANGED_SERVICES" = "[]" ] || [ "$CHANGED_SERVICES" = "" ]; then
+
+          # Services with changed files, plus storage/secrets whenever config/ changes
+          # (both are cheap to lint and a bad config/ edit can break every service).
+          CHANGED_SERVICES=$(echo "$CHANGED_FILES" | grep "^services/" | cut -d'/' -f2 | grep -v "archived\|testing\|common" | sort -u)
+          if echo "$CHANGED_FILES" | grep -q "^config/"; then
+            CHANGED_SERVICES=$(printf '%s\nstorage\ncluster-secrets\n' "$CHANGED_SERVICES")
+          fi
+          CHANGED_SERVICES=$(echo "$CHANGED_SERVICES" | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Changed: $CHANGED_SERVICES"
+
+          if [ "$CHANGED_SERVICES" = "[]" ]; then
             echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "services=[]" >> $GITHUB_OUTPUT
           else
             echo "has-changes=true" >> $GITHUB_OUTPUT
-            echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           fi
+          echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
 
-  detect-infra:
+  validate:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      changed-infra: ${{ steps.changes.outputs.infra }}
-      has-changes: ${{ steps.changes.outputs.has-changes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
         with:
-          fetch-depth: 0
+          version: 'v3.14.0'
 
-      - name: Detect changed infra
-        id: changes
+      - name: Install SOPS
         run: |
-          # Get the list of changed files
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+          SOPS_VERSION="3.9.0"
+          curl -LO "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64"
+          sudo mv sops-v${SOPS_VERSION}.linux.amd64 /usr/local/bin/sops
+          chmod +x /usr/local/bin/sops
+
+      - name: Setup SOPS Age Key
+        run: |
+          mkdir -p ~/.config/sops/age
+          echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
+          chmod 600 ~/.config/sops/age/keys.txt
+          echo "SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt" >> $GITHUB_ENV
+
+      - name: Resolve chart path
+        id: path
+        run: |
+          SERVICE="${{ matrix.service }}"
+          if [ "$SERVICE" = "storage" ]; then
+            echo "path=./config/storage" >> $GITHUB_OUTPUT
+          elif [ "$SERVICE" = "cluster-secrets" ]; then
+            echo "path=./config/secrets" >> $GITHUB_OUTPUT
           else
-            # For push events, compare with main branch or use all commits in push
-            if git rev-parse origin/main >/dev/null 2>&1; then
-              CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
-            else
-              CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-            fi
+            echo "path=./services/$SERVICE" >> $GITHUB_OUTPUT
           fi
-          
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-          
-          CHANGED_INFRA="[]"
-          HAS_CHANGES="false"
-          
-          # Check for configuration changes
-          CONFIG_CHANGES=$(echo "$CHANGED_FILES" | grep "^config/" || echo "")
-          
-          if [ -n "$CONFIG_CHANGES" ]; then
-            echo "Configuration changes detected"
-            
-            # Check for storage changes
-            if echo "$CONFIG_CHANGES" | grep -q "^config/storage/"; then
-              echo "Storage configuration changed"
-              CHANGED_INFRA=$(echo "$CHANGED_INFRA" | jq -c '. + ["storage"] | unique')
-              HAS_CHANGES="true"
-            fi
-            
-            # Check for secrets changes
-            if echo "$CONFIG_CHANGES" | grep -q "^config/secrets/"; then
-              echo "Secrets configuration changed"
-              CHANGED_INFRA=$(echo "$CHANGED_INFRA" | jq -c '. + ["cluster-secrets"] | unique')
-              HAS_CHANGES="true"
-            fi
-          fi
-          
-          echo "Changed infra: $CHANGED_INFRA"
-          echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
-          echo "infra=$CHANGED_INFRA" >> $GITHUB_OUTPUT
 
-  check-skip-dev:
-    runs-on: ubuntu-latest
-    outputs:
-      skip: ${{ steps.check.outputs.skip }}
-    steps:
-      - name: Check if dev should be skipped
-        id: check
+      - name: Update chart dependencies
+        run: helm dependency update --skip-refresh "${{ steps.path.outputs.path }}"
+
+      - name: Decrypt secrets if present
+        id: secrets
         run: |
-          # Check workflow dispatch input
-          if [ "${{ github.event.inputs.skip-dev }}" = "true" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Skipping dev deployment (workflow dispatch input)"
-            exit 0
+          SECRETS_FILE="${{ steps.path.outputs.path }}/secrets.yaml"
+          if [ -f "$SECRETS_FILE" ]; then
+            sops -d "$SECRETS_FILE" > "${{ steps.path.outputs.path }}/secrets.dec.yaml"
+            echo "extra-values=-f ${{ steps.path.outputs.path }}/secrets.dec.yaml" >> $GITHUB_OUTPUT
+          else
+            echo "extra-values=" >> $GITHUB_OUTPUT
           fi
-          
-          # Check commit message for [skip-dev] or [no-dev]
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          if echo "$COMMIT_MSG" | grep -qiE '\[(skip-dev|no-dev)\]'; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Skipping dev deployment (commit message)"
-            exit 0
-          fi
-          
-          echo "skip=false" >> $GITHUB_OUTPUT
-          echo "Dev deployment will proceed"
 
-  deploy-infra:
-    needs: [detect-infra, check-skip-dev]
-    if: |
-      needs.detect-infra.outputs.has-changes == 'true' && 
-      needs.check-skip-dev.outputs.skip != 'true' &&
-      !startsWith(github.event.head_commit.message, '[skip-deploy]')
-    uses: ./.github/workflows/helm-deploy.yaml
-    with:
-      environment: dev
-      namespace: turing-pi-dev
-      changed-services: ${{ needs.detect-infra.outputs.changed-infra }}
-      deploy-all: false
-    secrets:
-      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
-      KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
-      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      - name: helm lint
+        run: helm lint "${{ steps.path.outputs.path }}" -f ./config/global-values.yaml ${{ steps.secrets.outputs.extra-values }}
 
-  deploy-services:
-    needs: [detect-services, deploy-infra, check-skip-dev]
-    if: |
-      always() && 
-      needs.detect-services.outputs.has-changes == 'true' && 
-      needs.check-skip-dev.outputs.skip != 'true' &&
-      !startsWith(github.event.head_commit.message, '[skip-deploy]') &&
-      (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
-    uses: ./.github/workflows/helm-deploy.yaml
-    with:
-      environment: dev
-      namespace: turing-pi-dev
-      changed-services: ${{ needs.detect-services.outputs.changed-services }}
-      deploy-all: false
-    secrets:
-      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
-      KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
-      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      - name: helm template (catch render errors)
+        run: helm template "${{ matrix.service }}" "${{ steps.path.outputs.path }}" -f ./config/global-values.yaml ${{ steps.secrets.outputs.extra-values }} > /dev/null
+
+      - name: Clean up decrypted secrets
+        if: always()
+        run: rm -f "${{ steps.path.outputs.path }}/secrets.dec.yaml"

@@ -29,7 +29,20 @@ Params:
       else
         echo "⚠️ No backup found at /restore-source/{{ $appName }}, starting fresh."
       fi
+      # rsync preserves the backup's original permission bits, which may
+      # predate fsGroup or a different runAsUser. Force group-writable so
+      # the app container (running as its own fsGroup) can always write.
+      chmod -R g+rwX {{ $configPath }}
       exit 0
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+      ephemeral-storage: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+      ephemeral-storage: 256Mi
   volumeMounts:
     - name: config
       mountPath: {{ $configPath }}
@@ -86,6 +99,15 @@ Manual backup trigger:
         done
         do_backup
       done
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+      ephemeral-storage: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+      ephemeral-storage: 256Mi
   volumeMounts:
     - name: config
       mountPath: {{ $configPath }}

@@ -2,8 +2,10 @@
 # This is a YAML-formatted file.
 # Runs on ALL nodes to clean up unused container images at a specific time
 
-# Schedule in cron format (default: 2:00 AM daily)
-schedule: "0 4 * * *"
+# Schedule in cron format. Runs every 15 minutes — cheap no-op when there's
+# nothing to prune, and catches disk pressure long before a once-daily
+# schedule would (see the ephemeral-storage-domino incident).
+schedule: "*/15 * * * *"
 
 # Timezone for the cleanup schedule (requires Kubernetes 1.27+)
 timezone: "Europe/Amsterdam"

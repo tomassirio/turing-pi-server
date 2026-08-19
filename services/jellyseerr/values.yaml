@@ -137,7 +137,6 @@ persistence:
 volumeMounts:
   - name: config
     mountPath: /app/config
-    subPath: jellyseerr
   - name: data
     mountPath: /data
 
