@@ -29,10 +29,12 @@ Params:
       else
         echo "⚠️ No backup found at /restore-source/{{ $appName }}, starting fresh."
       fi
-      # rsync preserves the backup's original permission bits, which may
-      # predate fsGroup or a different runAsUser. Force group-writable so
-      # the app container (running as its own fsGroup) can always write.
-      chmod -R g+rwX {{ $configPath }}
+      # rsync --no-g leaves new files group-owned by this container's own
+      # group (root), not the pod's fsGroup, so a plain "g+rwX" only helps
+      # if that group happens to match -- it didn't (root vs fsGroup 1000),
+      # and files that already existed before this fix kept failing.
+      # Force world-writable so this can't depend on group ownership at all.
+      chmod -R a+rwX {{ $configPath }}
       exit 0
   resources:
     requests:
