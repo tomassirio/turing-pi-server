@@ -15,6 +15,7 @@ spec:
         {{- include "image-cleanup.selectorLabels" . | nindent 8 }}
     spec:
       hostPID: true
+      priorityClassName: system-node-critical
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
