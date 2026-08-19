@@ -82,6 +82,30 @@ The k3s cluster is installed using Ansible and the [k3s-ansible](https://github.
 
     (Note the playbook lives at `playbooks/site.yml` in newer checkouts of k3s-ansible, not `site.yml`.)
 
+### 💾 turing-03's containerd storage lives on its local SSD, not the SD card
+
+`turing-03` has a 1TB SSD (`/dev/sda`, mounted at `/mnt/ssd`) physically attached — the same drive it exports over NFS to the other 4 nodes. Its own SD card is only ~6.7GB shared between the OS, k3s, and every container image/pod's ephemeral storage on that node, which made it the most consistently disk-pressured node in the cluster (it's also the control-plane node, so this mattered more than for the agents).
+
+Since the SSD is genuinely local to `turing-03` (no NFS involved for its own use), containerd's data directory is bind-mounted onto it instead of living on the SD card. This only applies to `turing-03` — the other 4 nodes don't have physical access to this drive, so their containerd storage stays on their own SD cards.
+
+If `turing-03` is ever reflashed/reprovisioned, redo this before rejoining it to the cluster:
+
+```bash
+ssh pi@192.168.2.103 '
+set -e
+sudo systemctl stop k3s
+sudo mkdir -p /mnt/ssd/k3s-containerd
+sudo rsync -a /var/lib/rancher/k3s/agent/containerd/ /mnt/ssd/k3s-containerd/
+sudo mv /var/lib/rancher/k3s/agent/containerd /var/lib/rancher/k3s/agent/containerd.old
+sudo mkdir -p /var/lib/rancher/k3s/agent/containerd
+echo "/mnt/ssd/k3s-containerd /var/lib/rancher/k3s/agent/containerd none bind 0 0" | sudo tee -a /etc/fstab
+sudo mount -a
+sudo systemctl start k3s
+'
+```
+
+Verify the bind mount took (`df -h /var/lib/rancher/k3s/agent/containerd` should show `/dev/sda`, ~938G) and `k3s` is `active` before deleting `containerd.old` to reclaim the SD card space.
+
 ### ✅ The Prerequisites
 
 Before you can deploy the services, you need to set up the cluster's core components. This involves installing MetalLB, an Nginx Ingress Controller, and CoreDNS.
