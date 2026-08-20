@@ -1,4 +1,4 @@
-# Default values for jellyseerr.
+# Default values for seerr.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,7 +7,7 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: fallenbagel/jellyseerr
+  repository: ghcr.io/seerr-team/seerr
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -70,14 +70,14 @@ ingress:
     nginx.ingress.kubernetes.io/service-upstream: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - host: jellyseerr.localhome.com
+    - host: seerr.localhome.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
     - secretName: localhome-tls
       hosts:
-        - jellyseerr.localhome.com
+        - seerr.localhome.com
 
 env:
   PUID: "911"
@@ -121,7 +121,7 @@ persistence:
   config:
     enabled: true
     existingClaim: nas-config-pvc
-    subPath: jellyseerr
+    subPath: seerr
   restore:
     enabled: true
     existingClaim: nas-config-pvc

@@ -11,7 +11,12 @@ image:
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  # v2.13.2's QBittorrentProxyV2 hardcodes a literal "Ok." check on the
+  # WebUI auth/login response. qBittorrent 5.x returns an empty 204 there
+  # instead, so Lidarr throws DownloadClientAuthenticationException even
+  # though the login actually succeeds. Fixed upstream in the v3 branch
+  # (response.Content.IsNotNullOrWhiteSpace() && response.Content != "Ok.").
+  tag: lidarr-plugins-3.1.2.4913
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -87,14 +92,17 @@ env:
 
 resources:
   requests:
-    ephemeral-storage: 256Mi
+    ephemeral-storage: 512Mi
   limits:
-    ephemeral-storage: 1Gi
+    # lidarr's actual /config (db + album artwork cache for a large library)
+    # runs ~1.1Gi -- the previous 1Gi limit left ~zero headroom and the pod
+    # kept getting evicted for exceeding its own ephemeral-storage budget.
+    ephemeral-storage: 3Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
+    path: /ping
     port: 8686
   initialDelaySeconds: 30
   timeoutSeconds: 5
@@ -103,7 +111,7 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /
+    path: /ping
     port: 8686
   initialDelaySeconds: 10
   timeoutSeconds: 5
