@@ -184,7 +184,7 @@ nfs:
         storage: 10Gi
         accessMode: ReadWriteOnce
         persistentVolumeName: prometheus-pv
-        namespace: configs
+        namespace: observability
 
 nas:
   pv:

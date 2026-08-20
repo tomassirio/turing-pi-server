@@ -2,13 +2,15 @@
 # Services not listed here deploy to the caller's default namespace.
 # Read by scripts/deploy-services.sh and .github/workflows/helm-deploy.yaml —
 # keep both in sync by only editing this file.
+# config/storage/values.yaml also hardcodes namespaces for some PV/PVCs
+# (e.g. prometheus-pvc) — keep those in sync with this file by hand too.
 factorio factorio
 minecraft minecraft
 image-cleanup configs
 configarr configs
 registry-cache configs
-kube-state-metrics configs
-prometheus configs
+kube-state-metrics observability
+prometheus observability
 grafana configs
-cloudflared configs
-twingate configs
+cloudflared network
+twingate network
