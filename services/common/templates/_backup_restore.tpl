@@ -75,6 +75,17 @@ Manual backup trigger:
       do_backup() {
         echo "🚀 Starting backup..."
         mkdir -p /backup-dest/{{ $appName }}
+        # A backup is a --delete mirror: one bad snapshot (crash, permission
+        # error, botched restore) permanently overwrites the only good copy,
+        # with no history to fall back to. Refuse to mirror if the live
+        # config lost more than half its files vs. the last backup -- that's
+        # config that broke, not config the user actually cleaned up.
+        current_count=$(find {{ $configPath }} -type f 2>/dev/null | wc -l)
+        backup_count=$(find /backup-dest/{{ $appName }} -type f 2>/dev/null | wc -l)
+        if [ "$backup_count" -gt 10 ] && [ "$current_count" -lt "$((backup_count / 2))" ]; then
+          echo "🛑 Refusing backup: live config has $current_count files, last backup has $backup_count. >50% drop looks like corruption, not intentional cleanup. Leaving last good backup in place."
+          return
+        fi
         # First, count total files
         total=$(rsync -a --dry-run --stats --delete --no-o --no-g {{ $configPath }}/ /backup-dest/{{ $appName }}/ | grep "Number of regular files transferred:" | awk '{print $6}')
         echo "📊 Files to transfer: $total"
