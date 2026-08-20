@@ -35,6 +35,6 @@ spec:
               mountPath: /var/lib/registry
       volumes:
         - name: data
-          persistentVolumeClaim:
-            claimName: {{ .existingClaim }}
+          emptyDir:
+            sizeLimit: {{ index $.Values.resources.limits "ephemeral-storage" }}
 {{- end }}

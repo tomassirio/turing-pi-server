@@ -218,19 +218,6 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /volume1/docker/
-    cache:
-      - name: registry-cache-docker-pv
-        storage: 20Gi
-        accessMode: ReadWriteOnce
-        path: /volume1/docker/registry-cache/docker-hub
-      - name: registry-cache-ghcr-pv
-        storage: 20Gi
-        accessMode: ReadWriteOnce
-        path: /volume1/docker/registry-cache/ghcr
-      - name: registry-cache-lscr-pv
-        storage: 10Gi
-        accessMode: ReadWriteOnce
-        path: /volume1/docker/registry-cache/lscr
   pvc:
     data:
       - name: nas-pvc
@@ -260,22 +247,6 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         persistentVolumeName: configs-config-pv
-        namespace: configs
-    cache:
-      - name: registry-cache-docker-pvc
-        storage: 20Gi
-        accessMode: ReadWriteOnce
-        persistentVolumeName: registry-cache-docker-pv
-        namespace: configs
-      - name: registry-cache-ghcr-pvc
-        storage: 20Gi
-        accessMode: ReadWriteOnce
-        persistentVolumeName: registry-cache-ghcr-pv
-        namespace: configs
-      - name: registry-cache-lscr-pvc
-        storage: 10Gi
-        accessMode: ReadWriteOnce
-        persistentVolumeName: registry-cache-lscr-pv
         namespace: configs
 
 deploy: me
