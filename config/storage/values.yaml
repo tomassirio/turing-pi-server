@@ -218,6 +218,10 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /volume1/docker/
+      - name: observability-config-pv
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        path: /volume1/docker/
   pvc:
     data:
       - name: nas-pvc
@@ -248,5 +252,10 @@ nas:
         accessMode: ReadWriteMany
         persistentVolumeName: configs-config-pv
         namespace: configs
+      - name: observability-config-pvc
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: observability-config-pv
+        namespace: observability
 
 deploy: me

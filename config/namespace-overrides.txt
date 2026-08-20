@@ -11,6 +11,6 @@ configarr configs
 registry-cache configs
 kube-state-metrics observability
 prometheus observability
-grafana configs
+grafana observability
 cloudflared network
 twingate network
