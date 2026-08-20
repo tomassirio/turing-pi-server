@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "homepage.fullname" . }}-config
+  labels:
+    {{- include "homepage.labels" . | nindent 4 }}
+data:
+  settings.yaml: |
+    title: Turing Pi Cluster
+    favicon: https://raw.githubusercontent.com/tomassirio/turing-pi-server/main/assets/icon/homer.png
+    theme: dark
+    color: slate
+    headerStyle: boxed
+    layout:
+      Media:
+        style: row
+        columns: 3
+      Downloads:
+        style: row
+        columns: 3
+      Monitoring:
+        style: row
+        columns: 2
+      System & Utilities:
+        style: row
+        columns: 3
+
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/tomassirio/turing-pi-server
+        - Kubernetes:
+            - abbr: K8s
+              href: https://kubernetes.io/docs/
+
+  kubernetes.yaml: |
+    mode: cluster
+
+  services.yaml: |
+    - Media:
+        - Sonarr:
+            icon: sonarr.png
+            href: http://sonarr.localhome.com
+            description: TV Series Management
+            widget:
+              type: sonarr
+              url: http://sonarr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_SONARR_API_KEY}}`}}
+        - Radarr:
+            icon: radarr.png
+            href: http://radarr.localhome.com
+            description: Movie Management
+            widget:
+              type: radarr
+              url: http://radarr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_RADARR_API_KEY}}`}}
+        - Lidarr:
+            icon: lidarr.png
+            href: http://lidarr.localhome.com
+            description: Music Management
+            widget:
+              type: lidarr
+              url: http://lidarr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_LIDARR_API_KEY}}`}}
+        - Bazarr:
+            icon: bazarr.png
+            href: http://bazarr.localhome.com
+            description: Subtitle Management
+            widget:
+              type: bazarr
+              url: http://bazarr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_BAZARR_API_KEY}}`}}
+        - Jellyseerr:
+            icon: jellyseerr.png
+            href: http://jellyseerr.localhome.com
+            description: Request Movies & TV Shows
+            widget:
+              type: jellyseerr
+              url: http://jellyseerr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}`}}
+
+    - Downloads:
+        - qBittorrent:
+            icon: qbittorrent.png
+            href: http://qbittorrent.localhome.com
+            description: Torrent Download Manager
+            widget:
+              type: qbittorrent
+              url: http://qbittorrent.default.svc.cluster.local
+              username: {{`{{HOMEPAGE_VAR_QBITTORRENT_USERNAME}}`}}
+              password: {{`{{HOMEPAGE_VAR_QBITTORRENT_PASSWORD}}`}}
+        - Prowlarr:
+            icon: prowlarr.png
+            href: http://prowlarr.localhome.com
+            description: Indexer Management
+            widget:
+              type: prowlarr
+              url: http://prowlarr.default.svc.cluster.local
+              key: {{`{{HOMEPAGE_VAR_PROWLARR_API_KEY}}`}}
+
+    - Monitoring:
+        - Grafana:
+            icon: grafana.png
+            href: http://grafana.localhome.com
+            description: Analytics & Monitoring
+            widget:
+              type: grafana
+              url: http://grafana.default.svc.cluster.local
+              username: {{`{{HOMEPAGE_VAR_GRAFANA_USERNAME}}`}}
+              password: {{`{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}`}}
+        - Prometheus:
+            icon: prometheus.png
+            href: http://prometheus.localhome.com
+            description: Metrics Collection
+
+    - System & Utilities:
+        - File Browser:
+            icon: filebrowser.png
+            href: http://filebrowser.localhome.com
+            description: Web File Explorer
+        - Technitium:
+            icon: si-technitium
+            href: http://technitium.localhome.com
+            description: DNS & DHCP Management
+        - Homer Dashboard:
+            icon: homer.png
+            href: http://dashboard.localhome.com
+            description: Alternative Dashboard
+
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+    - resources:
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+    - search:
+        provider: google
+        target: _blank
+
+  docker.yaml: ""
