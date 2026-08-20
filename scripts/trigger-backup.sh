@@ -25,7 +25,7 @@ BACKUP_SERVICES=(
     "lidarr"
     "prowlarr"
     "bazarr"
-    "jellyseerr"
+    "seerr"
     "grafana"
     "qbittorrent"
 )
