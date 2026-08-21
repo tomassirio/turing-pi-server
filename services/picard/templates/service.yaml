@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "homer.fullname" . }}
+  name: {{ include "picard.fullname" . }}
   labels:
-    {{- include "homer.labels" . | nindent 4 }}
+    {{- include "picard.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "homer.selectorLabels" . | nindent 4 }}
+    {{- include "picard.selectorLabels" . | nindent 4 }}

@@ -1,4 +1,4 @@
-# Default values for homer.
+# Default values for picard.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,11 +7,11 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: b4bz/homer
+  repository: aandree5/picard-web
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: latest
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -40,7 +40,6 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
   # capabilities:
@@ -56,23 +55,27 @@ service:
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 80
-  targetPort: 8080
+  targetPort: 5000
 
 persistence:
-  data:
+  music:
     enabled: true
-    existingClaim: nfs-pvc
+    existingClaim: nas-pvc
   config:
     enabled: true
-    existingClaim: nfs-config-pvc
-    subPath: homer
-
-env:
-  PUID: "911"
-  PGID: "911"
-  TZ: "Europe/Amsterdam"
-  INIT_ASSETS: "1"
-
+    type: emptyDir
+    existingClaim: nas-config-pvc
+    subPath: picard
+  restore:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -84,39 +87,45 @@ ingress:
     nginx.ingress.kubernetes.io/service-upstream: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
-    - host: dashboard.localhome.com
+    - host: picard.localhome.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
     - secretName: localhome-tls
       hosts:
-        - dashboard.localhome.com
+        - picard.localhome.com
 
 resources:
   requests:
-    ephemeral-storage: 128Mi
+    # picard had no cpu/memory request at all -- on turing-05 (3.8Gi RAM,
+    # already ~85% reserved), that means kubelet evicts it first the
+    # instant the node feels memory pressure, and a library scan (this
+    # one: 217Gi / 4287 files) is exactly the kind of spike that triggers
+    # it. A real request stops it from being the default eviction target.
+    cpu: 250m
+    memory: 256Mi
+    ephemeral-storage: 256Mi
   limits:
-    ephemeral-storage: 512Mi
+    cpu: "1"
+    memory: 1Gi
+    ephemeral-storage: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
     path: /
-    port: 8080
-  initialDelaySeconds: 10
-  timeoutSeconds: 5
+    port: 5000
+  initialDelaySeconds: 30
   periodSeconds: 10
-  failureThreshold: 3
-
+  timeoutSeconds: 5
 readinessProbe:
   httpGet:
     path: /
-    port: 8080
-  initialDelaySeconds: 10
-  timeoutSeconds: 5
+    port: 5000
+  initialDelaySeconds: 30
   periodSeconds: 10
-  failureThreshold: 3
+  timeoutSeconds: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -125,18 +134,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-# Additional volumes on the output Deployment definition.
-volumes:
-  - name: config-volume
-    configMap:
-      name: homer-config
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts:
-  - name: config-volume
-    mountPath: "/www/assets/config.yml"
-    subPath: "config.yml"
 
 nodeSelector: {}
 

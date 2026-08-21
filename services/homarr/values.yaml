@@ -1,0 +1,109 @@
+# Default values for homarr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/homarr-labs/homarr
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 7575
+
+# appdata holds Homarr's SQLite database. It's a local emptyDir (SQLite
+# doesn't tolerate NFS file locking) mirrored to nas-config-pvc by the
+# common restore/backup sidecars.
+persistence:
+  restore:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /restore-source
+    readOnly: true
+  backup:
+    enabled: true
+    existingClaim: nas-config-pvc
+    mountPath: /backup-dest
+    readOnly: false
+
+env:
+  TZ: "Europe/Amsterdam"
+  LOG_LEVEL: "info"
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: dashboard.localhome.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: localhome-tls
+      hosts:
+        - dashboard.localhome.com
+
+resources:
+  requests:
+    ephemeral-storage: 128Mi
+  limits:
+    ephemeral-storage: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /api/health/live
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /api/health/ready
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Homarr uses a single local SQLite DB with a backup sidecar that does
+# rsync --delete. Never raise maxReplicas above 1 -- concurrent replicas
+# would each write their own DB and stomp each other's backups.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

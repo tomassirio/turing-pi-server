@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "homarr.fullname" . }}
+  labels:
+    {{- include "homarr.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "homarr.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "homarr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "homarr.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "homarr.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- if .Values.persistence.restore.enabled }}
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "homarr" "ConfigPath" "/appdata") | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ include "homarr.fullname" . }}-secret
+          env:
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+            - name: LOG_LEVEL
+              value: "{{ .Values.env.LOG_LEVEL }}"
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /appdata
+        {{- if .Values.persistence.backup.enabled }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "homarr" "ConfigPath" "/appdata") | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: config
+          emptyDir: {}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

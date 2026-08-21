@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "picard.fullname" . }}
+  labels:
+    {{- include "picard.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "picard.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "picard.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "picard.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "picard.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- if .Values.persistence.restore.enabled }}
+        {{- include "common.restore.initContainer" (dict "Values" .Values "AppName" "picard" "ConfigPath" "/picard-web") | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: music
+              mountPath: /music
+              subPath: media/music
+            - name: config
+              mountPath: /picard-web
+            {{- if .Values.persistence.restore.enabled }}
+            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
+              mountPath: {{ .Values.persistence.restore.mountPath }}
+              {{- if .Values.persistence.restore.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.persistence.backup.enabled }}
+            - name: backup
+              mountPath: {{ .Values.persistence.backup.mountPath }}
+              {{- if .Values.persistence.backup.readOnly }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "picard" "ConfigPath" "/picard-web") | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: music
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.music.existingClaim }}
+        - name: config
+        {{- if eq .Values.persistence.config.type "emptyDir" }}
+          emptyDir: {}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.existingClaim }}
+        {{- end }}
+        {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
+        - name: restore
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.restore.existingClaim }}
+        {{- end }}
+        {{- if .Values.persistence.backup.enabled }}
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.backup.existingClaim }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

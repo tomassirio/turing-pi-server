@@ -39,11 +39,16 @@ Params:
   resources:
     requests:
       cpu: 10m
-      memory: 32Mi
+      memory: 64Mi
       ephemeral-storage: 64Mi
     limits:
       cpu: 250m
-      memory: 128Mi
+      # rsync's own heap is tiny, but reading/writing a large config dir
+      # (lidarr's /config runs ~800Mi) charges page cache against this
+      # container's memory cgroup -- 128Mi OOMKilled sonarr's backup
+      # sidecar mid-transfer on a 466Mi /config. Sized with headroom above
+      # the largest known /config footprint in this stack.
+      memory: 512Mi
       ephemeral-storage: 256Mi
   volumeMounts:
     - name: config
@@ -97,6 +102,14 @@ Manual backup trigger:
 
       echo "⏰ Starting backup scheduler (every {{ .Values.persistence.backup.intervalSeconds | default 3600 }}s)..."
       echo "💡 Tip: Trigger manual backup with: kubectl exec -it <pod> -c backup-config -- touch /tmp/trigger-backup"
+      # This sidecar's image is small and usually already cached, so it starts
+      # long before the app container (bigger image, often a slow pull under
+      # node disk pressure) has finished writing its config/db. A backup taken
+      # in that window mirrors a half-initialized config over the last good
+      # one via --delete, destroying it. Give the app real time to start
+      # before the first mirror ever runs.
+      echo "⏳ Waiting {{ .Values.persistence.backup.startupGraceSeconds | default 180 }}s before first backup, to let the app finish writing its config..."
+      sleep {{ .Values.persistence.backup.startupGraceSeconds | default 180 }}
       do_backup
       while true; do
         elapsed=0
@@ -115,11 +128,16 @@ Manual backup trigger:
   resources:
     requests:
       cpu: 10m
-      memory: 32Mi
+      memory: 64Mi
       ephemeral-storage: 64Mi
     limits:
       cpu: 250m
-      memory: 128Mi
+      # rsync's own heap is tiny, but reading/writing a large config dir
+      # (lidarr's /config runs ~800Mi) charges page cache against this
+      # container's memory cgroup -- 128Mi OOMKilled sonarr's backup
+      # sidecar mid-transfer on a 466Mi /config. Sized with headroom above
+      # the largest known /config footprint in this stack.
+      memory: 512Mi
       ephemeral-storage: 256Mi
   volumeMounts:
     - name: config

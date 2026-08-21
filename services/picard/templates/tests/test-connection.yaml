@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "homer.fullname" . }}-test-connection"
+  name: "{{ include "picard.fullname" . }}-test-connection"
   labels:
-    {{- include "homer.labels" . | nindent 4 }}
+    {{- include "picard.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
 spec:
@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "homer.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "picard.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
