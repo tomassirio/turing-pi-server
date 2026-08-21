@@ -66,34 +66,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /appdata
-              {{- if and .Values.persistence.config.subPath (not (eq .Values.persistence.config.type "emptyDir")) }}
-              subPath: {{ .Values.persistence.config.subPath }}
-              {{- end }}
-            {{- if .Values.persistence.restore.enabled }}
-            - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
-              mountPath: {{ .Values.persistence.restore.mountPath }}
-              {{- if .Values.persistence.restore.readOnly }}
-              readOnly: true
-              {{- end }}
-            {{- end }}
-            {{- if .Values.persistence.backup.enabled }}
-            - name: backup
-              mountPath: {{ .Values.persistence.backup.mountPath }}
-              {{- if .Values.persistence.backup.readOnly }}
-              readOnly: true
-              {{- end }}
-            {{- end }}
         {{- if .Values.persistence.backup.enabled }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "homarr" "ConfigPath" "/appdata") | nindent 8 }}
         {{- end }}
       volumes:
         - name: config
-        {{- if eq .Values.persistence.config.type "emptyDir" }}
           emptyDir: {}
-        {{- else }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.config.existingClaim }}
-        {{- end }}
         {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
         - name: restore
           persistentVolumeClaim:

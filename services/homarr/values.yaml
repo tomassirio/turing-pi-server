@@ -16,7 +16,7 @@ fullnameOverride: ""
 
 serviceAccount:
   create: true
-  automount: true
+  automount: false
   annotations: {}
   name: ""
 
@@ -36,11 +36,6 @@ service:
 # doesn't tolerate NFS file locking) mirrored to nas-config-pvc by the
 # common restore/backup sidecars.
 persistence:
-  config:
-    enabled: true
-    type: emptyDir
-    existingClaim: nas-config-pvc
-    subPath: homarr
   restore:
     enabled: true
     existingClaim: nas-config-pvc
@@ -83,7 +78,7 @@ resources:
 livenessProbe:
   httpGet:
     path: /api/health/live
-    port: 7575
+    port: http
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
@@ -92,16 +87,19 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /api/health/ready
-    port: 7575
+    port: http
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
 
+# Homarr uses a single local SQLite DB with a backup sidecar that does
+# rsync --delete. Never raise maxReplicas above 1 -- concurrent replicas
+# would each write their own DB and stomp each other's backups.
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 1
   targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
