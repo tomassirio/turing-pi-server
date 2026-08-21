@@ -1,0 +1,13 @@
+apiVersion: v2
+name: homarr
+description: A Helm chart for Homarr, a dashboard for the cluster's services
+
+type: application
+
+dependencies:
+  - name: common
+    version: 0.1.0
+    repository: file://../common
+
+version: 0.1.0
+appVersion: "latest"
