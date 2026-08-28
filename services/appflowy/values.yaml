@@ -1,0 +1,149 @@
+# Default values for appflowy (self-hosted AppFlowy Cloud).
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  name: ""
+
+ingress:
+  enabled: true
+  className: nginx
+  host: appflowy.localhome.com
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  tls: []
+
+nodeSelector: {}
+
+postgres:
+  image:
+    repository: pgvector/pgvector
+    tag: pg16
+  user: postgres
+  database: postgres
+  persistence:
+    existingClaim: appflowy-postgres-pvc
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+redis:
+  image:
+    repository: redis
+    tag: 7-alpine
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+minio:
+  image:
+    repository: minio/minio
+    tag: latest
+  persistence:
+    existingClaim: appflowy-minio-pvc
+    subPath: appflowy/minio
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+gotrue:
+  image:
+    repository: appflowyinc/gotrue
+    tag: latest
+  disableSignup: false
+  jwtExpirySeconds: 7200
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+cloud:
+  image:
+    repository: appflowyinc/appflowy_cloud
+    tag: latest
+  logLevel: info
+  s3Bucket: appflowy
+  s3Region: us-east-1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+admin:
+  image:
+    repository: appflowyinc/admin_frontend
+    tag: latest
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+web:
+  image:
+    repository: appflowyinc/appflowy_web
+    tag: latest
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# Background poller that actually processes import tasks (Notion ZIP
+# imports, etc). Without it, uploads queue in af_import_task and just sit
+# there -- the web UI shows "will be imported soon" forever.
+worker:
+  image:
+    repository: appflowyinc/appflowy_worker
+    tag: latest
+  importTickIntervalSeconds: 30
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Sensitive values live in secrets.yaml (encrypted with SOPS), merged in at deploy time.
+# Leaves must sit under a "data" key so the repo's .sops.yaml encrypted_regex picks them up.
+secrets:
+  postgres:
+    data:
+      password: ""
+  minio:
+    data:
+      rootUser: ""
+      rootPassword: ""
+  gotrue:
+    data:
+      jwtSecret: ""
+      adminEmail: ""
+      adminPassword: ""

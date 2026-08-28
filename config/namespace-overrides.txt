@@ -6,6 +6,7 @@
 # (e.g. prometheus-pvc) — keep those in sync with this file by hand too.
 factorio factorio
 minecraft minecraft
+appflowy appflowy
 image-cleanup configs
 configarr configs
 registry-cache configs

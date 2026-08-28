@@ -1,0 +1,6 @@
+apiVersion: v2
+name: appflowy
+description: Self-hosted AppFlowy Cloud (postgres, redis, minio, gotrue, appflowy_cloud, admin_frontend, appflowy_web)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

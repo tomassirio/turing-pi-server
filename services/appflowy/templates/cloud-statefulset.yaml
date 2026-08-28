@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-cloud
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cloud
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-cloud
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-cloud
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-cloud
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      {{- $gotrueUrl := printf "http://%s-gotrue:9999/health" (include "appflowy.fullname" .) }}
+      initContainers:
+        - name: wait-for-gotrue
+          image: curlimages/curl:latest
+          # Upstream's docker-compose gates appflowy_cloud on gotrue's
+          # healthcheck (gotrue creates the "auth" schema its migrations
+          # run first) -- without this, cloud's migrations can race ahead
+          # and fail with `schema "auth" does not exist`.
+          command:
+            - sh
+            - -c
+            - until curl -sf {{ $gotrueUrl }}; do echo waiting for gotrue; sleep 5; done
+      containers:
+        - name: appflowy-cloud
+          image: "{{ .Values.cloud.image.repository }}:{{ .Values.cloud.image.tag }}"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: RUST_LOG
+              value: {{ .Values.cloud.logLevel | quote }}
+            - name: APPFLOWY_ENVIRONMENT
+              value: production
+            - name: APPFLOWY_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: DATABASE_URL
+            - name: APPFLOWY_REDIS_URI
+              value: {{ printf "redis://%s-redis:6379" (include "appflowy.fullname" .) | quote }}
+            - name: APPFLOWY_GOTRUE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: GOTRUE_JWT_SECRET
+            - name: APPFLOWY_GOTRUE_BASE_URL
+              value: {{ printf "http://%s-gotrue:9999" (include "appflowy.fullname" .) | quote }}
+            - name: APPFLOWY_S3_USE_MINIO
+              value: "true"
+            - name: APPFLOWY_S3_CREATE_BUCKET
+              value: "true"
+            - name: APPFLOWY_S3_MINIO_URL
+              value: {{ printf "http://%s-minio:9000" (include "appflowy.fullname" .) | quote }}
+            # Presigned URLs handed to the browser (ZIP import, attachments)
+            # can't use the internal service DNS above -- swap in the public
+            # ingress path. See ingress.yaml's /minio-api rule.
+            - name: APPFLOWY_S3_PRESIGNED_URL_ENDPOINT
+              value: {{ printf "https://%s/minio-api" .Values.ingress.host | quote }}
+            - name: APPFLOWY_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: MINIO_ROOT_USER
+            - name: APPFLOWY_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: MINIO_ROOT_PASSWORD
+            - name: APPFLOWY_S3_BUCKET
+              value: {{ .Values.cloud.s3Bucket | quote }}
+            - name: APPFLOWY_S3_REGION
+              value: {{ .Values.cloud.s3Region | quote }}
+            - name: APPFLOWY_WEB_URL
+              value: {{ printf "https://%s" .Values.ingress.host | quote }}
+            - name: APPFLOWY_BASE_URL
+              value: {{ printf "https://%s" .Values.ingress.host | quote }}
+            - name: AI_ENABLED
+              value: "false"
+            - name: APPFLOWY_ACCESS_CONTROL
+              value: "true"
+          resources:
+            {{- toYaml .Values.cloud.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

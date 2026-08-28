@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-gotrue
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gotrue
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-gotrue
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-gotrue
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-gotrue
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      containers:
+        - name: gotrue
+          image: "{{ .Values.gotrue.image.repository }}:{{ .Values.gotrue.image.tag }}"
+          ports:
+            - containerPort: 9999
+          env:
+            - name: PORT
+              value: "9999"
+            - name: GOTRUE_DB_DRIVER
+              value: postgres
+            - name: DB_NAMESPACE
+              value: auth
+            # Overrides the shared secret's DATABASE_URL (env entries win over
+            # envFrom on name collision). GoTrue's migrations respect
+            # DB_NAMESPACE for where they create tables, but its runtime
+            # queries (e.g. the admin-create-user CLI step) are unqualified
+            # and need search_path set on the connection itself, or they look
+            # in "public" and fail with `relation "identities" does not exist`.
+            - name: DATABASE_URL
+              value: {{ printf "postgres://%s:%s@%s-postgres:5432/%s?search_path=auth" .Values.postgres.user .Values.secrets.postgres.data.password (include "appflowy.fullname" .) .Values.postgres.database | quote }}
+            - name: GOTRUE_SITE_URL
+              value: {{ printf "https://%s" .Values.ingress.host | quote }}
+            - name: API_EXTERNAL_URL
+              value: {{ printf "https://%s/gotrue" .Values.ingress.host | quote }}
+            - name: GOTRUE_URI_ALLOW_LIST
+              value: "*"
+            - name: GOTRUE_DISABLE_SIGNUP
+              value: {{ .Values.gotrue.disableSignup | quote }}
+            - name: GOTRUE_JWT_EXP
+              value: {{ .Values.gotrue.jwtExpirySeconds | quote }}
+            - name: GOTRUE_JWT_ADMIN_GROUP_NAME
+              value: "admin"
+            - name: GOTRUE_MAILER_AUTOCONFIRM
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: {{ include "appflowy.secretName" . }}
+          resources:
+            {{- toYaml .Values.gotrue.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9999
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9999
+            initialDelaySeconds: 20
+            periodSeconds: 20
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

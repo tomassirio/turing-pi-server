@@ -1,0 +1,125 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "appflowy.fullname" . }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /console
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-admin
+                port:
+                  number: 3000
+          - path: /ai
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-cloud
+                port:
+                  number: 8000
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-cloud
+                port:
+                  number: 8000
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-cloud
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-web
+                port:
+                  number: 80
+---
+# gotrue needs the /gotrue prefix stripped before it reaches the container,
+# every other path above is forwarded as-is, so it gets its own Ingress
+# (rewrite-target applies to the whole Ingress object in ingress-nginx).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "appflowy.fullname" . }}-gotrue
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /gotrue(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-gotrue
+                port:
+                  number: 9999
+---
+# Presigned S3 upload/download URLs (client-side ZIP import, file attachments,
+# etc.) point directly at MinIO from the browser -- they can't use the
+# internal service DNS name. APPFLOWY_S3_PRESIGNED_URL_ENDPOINT on cloud
+# swaps the host to this public path; the request's bucket/key path (and so
+# its SigV4 signature) must reach MinIO unchanged, so this strips the
+# /minio-api prefix back off before proxying, same as the gotrue rule above.
+# The signature also covers the Host header (X-Amz-SignedHeaders=host),
+# signed against the internal service name -- upstream-vhost rewrites the
+# Host nginx sends to MinIO back to that same internal name, otherwise
+# MinIO sees the public Host and rejects with SignatureDoesNotMatch.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "appflowy.fullname" . }}-minio-api
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/upstream-vhost: {{ printf "%s-minio:9000" (include "appflowy.fullname" .) | quote }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /minio-api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "appflowy.fullname" . }}-minio
+                port:
+                  number: 9000
+{{- end }}

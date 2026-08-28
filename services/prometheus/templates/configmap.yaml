@@ -97,6 +97,18 @@ data:
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
+          # Opt-in per-pod override for slow scrapes (e.g. exportarr fanning
+          # out per-series API calls against a large sonarr library). Pods
+          # without these annotations are unaffected -- falls back to the
+          # job/global defaults above.
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_interval]
+            action: replace
+            regex: (.+)
+            target_label: __scrape_interval__
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_timeout]
+            action: replace
+            regex: (.+)
+            target_label: __scrape_timeout__
           - action: labelmap
             regex: __meta_kubernetes_pod_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]

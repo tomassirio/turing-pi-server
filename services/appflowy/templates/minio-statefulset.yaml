@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-minio
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-minio
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-minio
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-minio
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      containers:
+        - name: minio
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          args: ["server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          env:
+            - name: MINIO_BROWSER_REDIRECT_URL
+              value: {{ printf "https://%s/minio/" .Values.ingress.host | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ include "appflowy.secretName" . }}
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              subPath: {{ .Values.minio.persistence.subPath }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.minio.persistence.existingClaim }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
