@@ -141,6 +141,10 @@ nfs:
         accessMode: ReadWriteOnce
         path: /mnt/ssd/postgres
         namespace: wanderer
+      - name: appflowy-postgres-pv
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        path: /mnt/ssd/appflowy-postgres
     config:
       - name: nfs-config-pv
         storage: 10Gi
@@ -170,6 +174,11 @@ nfs:
         accessMode: ReadWriteOnce
         persistentVolumeName: postgres-pv
         namespace: wanderer
+      - name: appflowy-postgres-pvc
+        storage: 20Gi
+        accessMode: ReadWriteOnce
+        persistentVolumeName: appflowy-postgres-pv
+        namespace: appflowy
     config:
       - name: nfs-config-pvc
         storage: 10Gi
@@ -222,6 +231,10 @@ nas:
         storage: 10Gi
         accessMode: ReadWriteMany
         path: /volume1/docker/
+      - name: appflowy-minio-pv
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        path: /volume1/docker/
   pvc:
     data:
       - name: nas-pvc
@@ -257,5 +270,10 @@ nas:
         accessMode: ReadWriteMany
         persistentVolumeName: observability-config-pv
         namespace: observability
+      - name: appflowy-minio-pvc
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: appflowy-minio-pv
+        namespace: appflowy
 
 deploy: me

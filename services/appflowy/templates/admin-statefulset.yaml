@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-admin
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: admin
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-admin
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-admin
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-admin
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      containers:
+        - name: admin-frontend
+          image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag }}"
+          ports:
+            - containerPort: 3000
+          env:
+            - name: APPFLOWY_GOTRUE_BASE_URL
+              value: {{ printf "https://%s/gotrue" .Values.ingress.host | quote }}
+            - name: APPFLOWY_BASE_URL
+              value: {{ printf "https://%s" .Values.ingress.host | quote }}
+          resources:
+            {{- toYaml .Values.admin.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: byparr
+description: A Helm chart for Byparr - FlareSolverr-compatible proxy to bypass Cloudflare protection
+type: application
+version: 0.1.0
+appVersion: "latest"

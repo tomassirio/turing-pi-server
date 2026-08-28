@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-worker
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-worker
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-worker
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      containers:
+        - name: appflowy-worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          env:
+            - name: RUST_LOG
+              value: {{ .Values.cloud.logLevel | quote }}
+            - name: APPFLOWY_ENVIRONMENT
+              value: production
+            - name: APPFLOWY_WORKER_ENVIRONMENT
+              value: production
+            - name: APPFLOWY_WORKER_REDIS_URL
+              value: {{ printf "redis://%s-redis:6379" (include "appflowy.fullname" .) | quote }}
+            - name: APPFLOWY_WORKER_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: DATABASE_URL
+            - name: APPFLOWY_WORKER_DATABASE_NAME
+              value: {{ .Values.postgres.database | quote }}
+            - name: APPFLOWY_WORKER_IMPORT_TICK_INTERVAL
+              value: {{ .Values.worker.importTickIntervalSeconds | quote }}
+            - name: APPFLOWY_S3_USE_MINIO
+              value: "true"
+            - name: APPFLOWY_S3_MINIO_URL
+              value: {{ printf "http://%s-minio:9000" (include "appflowy.fullname" .) | quote }}
+            - name: APPFLOWY_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: MINIO_ROOT_USER
+            - name: APPFLOWY_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "appflowy.secretName" . }}
+                  key: MINIO_ROOT_PASSWORD
+            - name: APPFLOWY_S3_BUCKET
+              value: {{ .Values.cloud.s3Bucket | quote }}
+            - name: APPFLOWY_S3_REGION
+              value: {{ .Values.cloud.s3Region | quote }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "appflowy.fullname" . }}-web
+  labels:
+    {{- include "appflowy.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  serviceName: {{ include "appflowy.fullname" . }}-web
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "appflowy.name" . }}-web
+  template:
+    metadata:
+      labels:
+        app: {{ include "appflowy.name" . }}-web
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "appflowy.serviceAccountName" . }}
+      containers:
+        - name: appflowy-web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          ports:
+            - containerPort: 80
+          env:
+            - name: APPFLOWY_BASE_URL
+              value: {{ printf "https://%s" .Values.ingress.host | quote }}
+            - name: APPFLOWY_GOTRUE_BASE_URL
+              value: {{ printf "https://%s/gotrue" .Values.ingress.host | quote }}
+            - name: APPFLOWY_WS_BASE_URL
+              value: {{ printf "wss://%s/ws" .Values.ingress.host | quote }}
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 20
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -77,6 +77,12 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "9794"
   prometheus.io/path: "/metrics"
+  # exportarr fans out per-series API calls (episodes + episodefiles) against
+  # sonarr's own library on every scrape -- with 55+ series on this hardware
+  # that measured well past Prometheus's default 10s scrape_timeout, causing
+  # every scrape to fail outright. Give this target more room.
+  prometheus.io/scrape-interval: "60s"
+  prometheus.io/scrape-timeout: "30s"
 
 additionalContainers:
   - name: exportarr
@@ -127,8 +133,12 @@ securityContext: {}
 
 resources:
   requests:
+    cpu: 250m
+    memory: 512Mi
     ephemeral-storage: 256Mi
   limits:
+    cpu: "2"
+    memory: 1Gi
     ephemeral-storage: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
