@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "minecraft.fullname" . }}
+  labels:
+    {{- include "minecraft.labels" . | nindent 4 }}
+  {{- if .Values.service.loadBalancerIP }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: minecraft
+      port: {{ .Values.service.port }}
+      targetPort: minecraft
+      protocol: TCP
+    - name: rcon
+      port: {{ .Values.service.rconPort }}
+      targetPort: rcon
+      protocol: TCP
+  selector:
+    {{- include "minecraft.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,116 @@
+# Default values for minecraft.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+# Image from https://hub.docker.com/r/itzg/minecraft-server - multi-arch (amd64/arm64/armv7)
+image:
+  repository: itzg/minecraft-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+  # - name: regcred
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: LoadBalancer
+  loadBalancerIP: 192.168.2.222
+  port: 25565
+  rconPort: 25575
+
+# Persistence - use existing NFS PVC
+persistence:
+  data:
+    enabled: true
+    existingClaim: minecraft-pvc
+
+# All env vars are passed through as-is to the container, see the full list at
+# https://github.com/itzg/docker-minecraft-server#server-configuration
+env:
+  EULA: "TRUE"
+  TYPE: "VANILLA"
+  VERSION: "LATEST"
+  DIFFICULTY: "normal"
+  MODE: "survival"
+  MEMORY: "2G"
+  MOTD: "Turing Pi Minecraft Server"
+  OPS: ""
+  ENFORCE_WHITELIST: "false"
+#  WHITELIST: "EseEsEze:fe3734fc-23fb-3b5d-a74d-08ee70e51d48"
+  ENABLE_RCON: "false"
+  ONLINE_MODE: "false"
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  tcpSocket:
+    port: 25565
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 10
+  failureThreshold: 10
+readinessProbe:
+  tcpSocket:
+    port: 25565
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

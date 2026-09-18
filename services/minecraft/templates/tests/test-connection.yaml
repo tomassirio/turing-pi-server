@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "minecraft.fullname" . }}-test-connection"
+  labels:
+    {{- include "minecraft.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: nc
+      image: busybox
+      command: ['nc']
+      args: ['-z', '-v', '{{ include "minecraft.fullname" . }}', '{{ .Values.service.port }}']
+  restartPolicy: Never
