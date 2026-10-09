@@ -15,4 +15,4 @@ prometheus observability
 grafana observability
 cloudflared network
 twingate network
-ingress-nginx ingress-nginx
+metallb metallb-system

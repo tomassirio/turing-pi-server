@@ -1,0 +1,11 @@
+# Thin wrapper around the upstream metallb chart (metallb.github.io/metallb).
+# Values are nested under `metallb:` because that's the dependency name in Chart.yaml.
+#
+# Cluster only uses L2Advertisement (config/metallb-config.yaml) - no BGP - but this
+# chart version (0.15.2) still defaults speaker.frr.enabled to true, so every speaker
+# pod runs unused frr/frr-metrics sidecars. One of them (turing-04) was crashlooping
+# every ~5min for no functional reason. Disabled since nothing here speaks BGP.
+metallb:
+  speaker:
+    frr:
+      enabled: false
