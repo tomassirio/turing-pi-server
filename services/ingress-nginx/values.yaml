@@ -1,0 +1,22 @@
+# Thin wrapper around the upstream ingress-nginx chart (kubernetes.github.io/ingress-nginx).
+# Values are nested under `ingress-nginx:` because that's the dependency name in Chart.yaml.
+#
+# Single replica meant the whole network's ingress went down if that one pod's node died.
+# MetalLB (config/metallb-config.yaml, L2 mode) already fails the VIP over between nodes,
+# but that only helps if a controller pod is still alive somewhere to receive it - so spread
+# 3 replicas one-per-node via anti-affinity, surviving any single node loss.
+ingress-nginx:
+  controller:
+    replicaCount: 3
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values: [controller]
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values: [ingress-nginx]
+            topologyKey: kubernetes.io/hostname
