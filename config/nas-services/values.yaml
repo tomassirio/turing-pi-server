@@ -19,6 +19,16 @@ services:
     host: romm.localhome.com
     ip: 192.168.2.150
     port: 1759
+    # Gated behind Authentik (Proxy Provider, forward-auth single-application
+    # mode). authentik's embedded outpost matches which app a check is for by
+    # Host header, so auth-url must keep the real hostname (not the internal
+    # Service DNS name) - a CoreDNS override (kube-system/coredns-custom)
+    # resolves romm.localhome.com in-cluster to authentik-server's ClusterIP
+    # so this still reaches the right pod without leaving the cluster.
+    extraAnnotations:
+      nginx.ingress.kubernetes.io/auth-url: "http://romm.localhome.com/outpost.goauthentik.io/auth/nginx"
+      nginx.ingress.kubernetes.io/auth-signin: "https://romm.localhome.com/outpost.goauthentik.io/start?rd=$escaped_request_uri"
+      nginx.ingress.kubernetes.io/auth-response-headers: "Set-Cookie"
   - name: immich
     host: immich.localhome.com
     ip: 192.168.2.150

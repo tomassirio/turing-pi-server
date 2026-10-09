@@ -34,6 +34,9 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "false"
     {{- end }}
+    {{- range $key, $value := .extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   ingressClassName: {{ $.Values.ingress.className }}
   tls:
