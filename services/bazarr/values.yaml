@@ -157,4 +157,17 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+# turing-04's SD card is chronically near-full (~94%, ~390Mi free) -- the
+# scheduler bin-packs on *requested* ephemeral-storage, not real disk usage,
+# so it doesn't see that and happily lands pods there anyway. Image
+# pulls/unpacks then crawl or fail outright (hit this with valheim too).
+# Steer clear until that node's disk is actually cleaned up.
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: NotIn
+              values:
+                - turing-04
