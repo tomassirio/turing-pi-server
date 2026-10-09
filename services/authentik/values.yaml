@@ -11,6 +11,14 @@ authentik:
     error_reporting:
       enabled: false
 
+  # turing-01/02/05 all tipped into DiskPressure pulling this image (SD
+  # cards are ~7Gi each, and authentik's image is large) - turing-03 is the
+  # only node with real headroom, because its containerd data dir is
+  # bind-mounted onto its local SSD (see README's turing-03 storage note).
+  global:
+    nodeSelector:
+      kubernetes.io/hostname: turing-03
+
   server:
     ingress:
       enabled: true
@@ -32,6 +40,8 @@ authentik:
   postgresql:
     enabled: true
     primary:
+      nodeSelector:
+        kubernetes.io/hostname: turing-03
       persistence:
         enabled: true
         # Postgres on NFS risks data corruption (no real POSIX locking), so
