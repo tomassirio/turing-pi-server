@@ -1,0 +1,26 @@
+# Rebalances pods across nodes on an interval — the default k8s scheduler only
+# picks a node at pod-creation time and never moves existing pods, so any
+# imbalance (e.g. from a node being down) sticks around forever.
+#
+# Applied directly (descheduler isn't wrapped as a chart under services/, same
+# as metallb-config.yaml):
+#   helm upgrade descheduler descheduler/descheduler -n kube-system -f config/descheduler-values.yaml
+
+deschedulerPolicy:
+  profiles:
+    - name: default
+      pluginConfig:
+        - name: LowNodeUtilization
+          args:
+            thresholds:
+              cpu: 20
+              memory: 20
+              pods: 20
+            targetThresholds:
+              cpu: 50
+              memory: 50
+              pods: 50
+      plugins:
+        balance:
+          enabled:
+            - LowNodeUtilization
