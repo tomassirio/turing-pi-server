@@ -90,7 +90,7 @@ jobs:
           fi
 
       - name: Update chart dependencies
-        run: helm dependency update --skip-refresh "${{ steps.path.outputs.path }}"
+        run: helm dependency update "${{ steps.path.outputs.path }}"
 
       - name: Decrypt secrets if present
         id: secrets
