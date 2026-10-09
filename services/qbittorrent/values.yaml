@@ -154,6 +154,8 @@ vpn:
   dot: "off"
   dnsAddress: "1.1.1.1"
   healthTargetAddress: "cloudflare.com"
+  portForwarding:
+    enabled: true
   image:
     repository: qmcgaw/gluetun
     tag: latest
