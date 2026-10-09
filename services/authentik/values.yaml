@@ -1,0 +1,40 @@
+# Thin wrapper around the upstream authentik Helm chart (charts.goauthentik.io).
+# Values are nested under `authentik:` because that's the name of the chart
+# dependency declared in Chart.yaml - everything below is this subchart's own
+# values schema (run `helm show values authentik/authentik` to see the rest).
+#
+# Secrets (authentik.authentik.secret_key, authentik.authentik.postgresql.password,
+# authentik.postgresql.auth.password) live in secrets.yaml, encrypted with sops.
+
+authentik:
+  authentik:
+    error_reporting:
+      enabled: false
+
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        # authentik's OIDC/SAML responses carry large headers/cookies that
+        # overflow nginx's small default buffers.
+        nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+      hosts:
+        - authentik.localhome.com
+      tls:
+        - secretName: localhome-tls
+          hosts:
+            - authentik.localhome.com
+
+  # authentik no longer needs Redis (2025.x+) - just Postgres, bundled below
+  # via the chart's own bitnami postgresql subchart.
+  postgresql:
+    enabled: true
+    primary:
+      persistence:
+        enabled: true
+        # Postgres on NFS risks data corruption (no real POSIX locking), so
+        # this uses the cluster's local-path storage class instead of the
+        # shared nas-config-pvc the other services use.
+        storageClass: local-path
