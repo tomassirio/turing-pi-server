@@ -1,0 +1,54 @@
+{{- range .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}-nas
+spec:
+  ports:
+    - port: {{ .port }}
+      targetPort: {{ .port }}
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: {{ .name }}-nas
+  labels:
+    kubernetes.io/service-name: {{ .name }}-nas
+addressType: IPv4
+endpoints:
+  - addresses:
+      - {{ .ip }}
+ports:
+  - port: {{ .port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .name }}-nas
+  annotations:
+    {{- range $key, $value := $.Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- if eq .backendProtocol "HTTPS" }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "false"
+    {{- end }}
+spec:
+  ingressClassName: {{ $.Values.ingress.className }}
+  tls:
+    - secretName: {{ $.Values.ingress.tlsSecretName }}
+      hosts:
+        - {{ .host }}
+  rules:
+    - host: {{ .host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .name }}-nas
+                port:
+                  number: {{ .port }}
+{{- end }}
