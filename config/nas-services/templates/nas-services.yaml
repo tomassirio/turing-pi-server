@@ -47,6 +47,19 @@ spec:
     - host: {{ .host }}
       http:
         paths:
+          {{- if .authGated }}
+          # authentik's forward-auth flow redirects the browser here directly
+          # (not just the internal auth-check subrequest), so it has to be
+          # routed to authentik itself rather than falling through to this
+          # service's own catch-all "/" below.
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-server
+                port:
+                  number: 80
+          {{- end }}
           - path: /
             pathType: Prefix
             backend:

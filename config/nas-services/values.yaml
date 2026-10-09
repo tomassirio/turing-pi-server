@@ -19,6 +19,7 @@ services:
     host: romm.localhome.com
     ip: 192.168.2.150
     port: 1759
+    authGated: true
     # Gated behind Authentik (Proxy Provider, forward-auth single-application
     # mode). authentik's embedded outpost matches which app a check is for by
     # Host header, so auth-url must keep the real hostname (not the internal
