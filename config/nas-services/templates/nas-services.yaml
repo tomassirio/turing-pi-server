@@ -30,6 +30,10 @@ metadata:
     {{- range $key, $value := $.Values.ingress.annotations }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
+    {{- if eq .backendProtocol "HTTPS" }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "false"
+    {{- end }}
 spec:
   ingressClassName: {{ $.Values.ingress.className }}
   tls:
