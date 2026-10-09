@@ -133,31 +133,41 @@ securityContext: {}
 
 resources:
   requests:
-    cpu: 250m
-    memory: 512Mi
+    cpu: 500m
+    memory: 1Gi
     ephemeral-storage: 256Mi
   limits:
-    cpu: "2"
-    memory: 1Gi
+    cpu: "4"
+    # RSS sync / indexer search across 55+ series parses large release batches
+    # in memory (same burst that forced the CPU limit up below) -- 1Gi got
+    # OOMKilled mid-sync. Bumped with headroom; revisit if it still OOMs.
+    # Activity screen with ~1000 history entries loads the whole history into
+    # memory client-side too -- 2Gi wasn't enough headroom, bumped further.
+    memory: 3Gi
     ephemeral-storage: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# timeoutSeconds/failureThreshold widened past defaults: RSS sync bursts
+# (1000+ releases) CPU-throttle the container hard enough that /ping can
+# miss a tight 5s window even when sonarr itself is fine -- see cpu.stat
+# nr_throttled evidence, cpu limit raised above to reduce how often this
+# throttling happens at all.
 livenessProbe:
   httpGet:
     path: /ping
     port: 8989
   initialDelaySeconds: 30
   periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+  timeoutSeconds: 10
+  failureThreshold: 5
 readinessProbe:
   httpGet:
     path: /ping
     port: 8989
   initialDelaySeconds: 10
   periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+  timeoutSeconds: 10
+  failureThreshold: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
