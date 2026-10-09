@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nas-services
+description: Ingress routes into services hosted on the NAS (outside k3s) via ingress-nginx
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

@@ -1,0 +1,25 @@
+# NAS-hosted services aren't k3s workloads, so they have no pod selector for
+# a normal Service to match - each gets a selector-less Service + a manual
+# Endpoints pointing at the NAS IP:port, then an Ingress like any other
+# in-cluster backend. Deploys to the "default" namespace (no override in
+# config/namespace-overrides.txt) because that's where config/secrets'
+# localhome-tls cert is created.
+ingress:
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  tlsSecretName: localhome-tls
+
+services:
+  - name: jellyfin
+    host: jellyfin.localhome.com
+    ip: 192.168.2.150
+    port: 8899
+  - name: romm
+    host: romm.localhome.com
+    ip: 192.168.2.150
+    port: 1759
+  - name: immich
+    host: immich.localhome.com
+    ip: 192.168.2.150
+    port: 8180
