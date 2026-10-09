@@ -15,3 +15,4 @@ prometheus observability
 grafana observability
 cloudflared network
 twingate network
+metallb metallb-system

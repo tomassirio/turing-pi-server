@@ -1,0 +1,11 @@
+apiVersion: v2
+name: metallb
+description: MetalLB - bare-metal load-balancer implementation, provides the cluster's VIP pool
+type: application
+version: 0.1.0
+appVersion: "v0.15.2"
+
+dependencies:
+  - name: metallb
+    version: 0.15.2
+    repository: https://metallb.github.io/metallb
