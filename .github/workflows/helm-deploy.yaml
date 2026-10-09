@@ -192,7 +192,7 @@ jobs:
           
           # Update dependencies
           echo "📦 Updating Helm dependencies..."
-          helm dependency update --skip-refresh "$SERVICE_PATH"
+          helm dependency update "$SERVICE_PATH"
 
           # Check if service has secrets
           if [ -f "$SERVICE_PATH/secrets.yaml" ]; then

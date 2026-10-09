@@ -39,7 +39,7 @@ for serviceFolder in "$SERVICES_DIR"/*/; do
   echo -e "${BLUE}🚢  Deploying ${PURPLE}$serviceName${BLUE}...${NC}"
 
   echo -e "${BLUE}📦  Updating dependencies for ${PURPLE}$serviceName${BLUE}...${NC}"
-  helm dependency update --skip-refresh "$serviceFolder"
+  helm dependency update "$serviceFolder"
 
   GLOBAL_VALUES="$(dirname "$0")/config/global-values.yaml"
 
