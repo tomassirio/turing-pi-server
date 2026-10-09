@@ -110,6 +110,18 @@ spec:
               value: {{ .Values.vpn.dnsAddress | quote }}
             - name: HEALTH_TARGET_ADDRESS
               value: {{ .Values.vpn.healthTargetAddress | quote }}
+            {{- if .Values.vpn.portForwarding.enabled }}
+            - name: VPN_PORT_FORWARDING
+              value: "on"
+            - name: VPN_PORT_FORWARDING_PROVIDER
+              value: {{ .Values.vpn.provider }}
+            - name: VPN_PORT_FORWARDING_UP_COMMAND
+              value: >-
+                /bin/sh -c 'wget -qO- --header "Content-Type: application/x-www-form-urlencoded"
+                --header "Referer: http://localhost:{{ .Values.webuiPort }}"
+                --post-data "json={\"listen_port\":{{ "{{PORTS}}" }}}"
+                http://localhost:{{ .Values.webuiPort }}/api/v2/app/setPreferences'
+            {{- end }}
         {{- end }}
         {{- if .Values.exporter.enabled }}
         - name: exporter
