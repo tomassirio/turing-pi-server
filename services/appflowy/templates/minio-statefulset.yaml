@@ -24,13 +24,16 @@ spec:
       containers:
         - name: minio
           image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
-          args: ["server", "/data", "--console-address", ":9001"]
+          securityContext:
+            runAsUser: 1000
           ports:
             - containerPort: 9000
             - containerPort: 9001
           env:
             - name: MINIO_BROWSER_REDIRECT_URL
               value: {{ printf "https://%s/minio/" .Values.ingress.host | quote }}
+            - name: MINIO_DATA_DIR
+              value: /data
           envFrom:
             - secretRef:
                 name: {{ include "appflowy.secretName" . }}
@@ -40,14 +43,15 @@ spec:
             httpGet:
               path: /minio/health/live
               port: 9000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 45
             periodSeconds: 15
           livenessProbe:
             httpGet:
               path: /minio/health/live
               port: 9000
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             periodSeconds: 20
+            failureThreshold: 6
           volumeMounts:
             - name: data
               mountPath: /data
