@@ -16,3 +16,4 @@ grafana observability
 cloudflared network
 twingate network
 metallb metallb-system
+ingress-nginx ingress-nginx
