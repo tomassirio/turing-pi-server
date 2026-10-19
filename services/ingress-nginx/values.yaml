@@ -8,6 +8,21 @@
 ingress-nginx:
   controller:
     replicaCount: 3
+    # Avoid transient 404s: a new/rolling pod passes its readiness probe before it has
+    # synced every Ingress object from the API server, and the Service will route to it
+    # as soon as it's Ready. minReadySeconds gives it a buffer after Ready before the
+    # rollout proceeds; maxUnavailable: 0 means a replica is never taken down for a
+    # rolling update until its replacement is actually serving.
+    minReadySeconds: 15
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: 0
+        maxSurge: 1
+      type: RollingUpdate
+    # Keep 2 of 3 controllers alive during voluntary disruptions (node drain, etc.) so
+    # metallb always has a healthy backend to fail over to. Chart creates the PDB
+    # automatically whenever replicaCount > 1 - no separate enabled flag.
+    minAvailable: 2
     affinity:
       podAntiAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
