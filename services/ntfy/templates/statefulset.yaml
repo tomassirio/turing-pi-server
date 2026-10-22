@@ -53,11 +53,11 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: config
+            - name: server-config
               mountPath: /etc/ntfy/server.yml
               subPath: server.yml
               readOnly: true
-            - name: cache
+            - name: config
               mountPath: {{ .Values.persistence.cache.mountPath }}
             {{- if .Values.persistence.restore.enabled }}
             - name: {{ if eq .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim }}backup{{ else }}restore{{ end }}
@@ -77,10 +77,10 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- include "common.backup.sidecar" (dict "Values" .Values "AppName" "ntfy" "ConfigPath" "/var/cache/ntfy") | nindent 8 }}
       volumes:
-        - name: config
+        - name: server-config
           configMap:
             name: {{ include "ntfy.fullname" . }}
-        - name: cache
+        - name: config
         {{- if eq .Values.persistence.cache.type "emptyDir" }}
           emptyDir: {}
         {{- else }}
