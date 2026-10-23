@@ -91,6 +91,10 @@ spec:
         - name: gluetun
           image: {{ .Values.vpn.image.repository }}:{{ .Values.vpn.image.tag }}
           imagePullPolicy: {{ .Values.vpn.image.pullPolicy }}
+          ports:
+            - name: health
+              containerPort: {{ .Values.vpn.healthPort }}
+              protocol: TCP
           resources:
             {{- toYaml .Values.vpn.resources | nindent 12 }}
           securityContext: {{ toYaml .Values.vpn.securityContext | nindent 12 }}
@@ -110,8 +114,12 @@ spec:
               value: {{ .Values.vpn.dnsAddress | quote }}
             - name: HEALTH_TARGET_ADDRESS
               value: {{ .Values.vpn.healthTargetAddress | quote }}
+            - name: HEALTH_SERVER_ADDRESS
+              value: ":{{ .Values.vpn.healthPort }}"
             {{- if .Values.vpn.portForwarding.enabled }}
             - name: VPN_PORT_FORWARDING
+              value: "on"
+            - name: PORT_FORWARD_ONLY
               value: "on"
             - name: VPN_PORT_FORWARDING_PROVIDER
               value: {{ .Values.vpn.provider }}

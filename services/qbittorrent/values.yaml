@@ -1,8 +1,12 @@
 replicaCount: 1
 
+# Pinned: qBittorrent 5.3.0 (pulled via `latest` on 2026-10-22) tightened WebUI
+# reverse-proxy/CSRF auth checks, kicking authenticated sessions behind our
+# nginx ingress within minutes. Pin to the last known-good build until that's
+# sorted out upstream. https://github.com/qbittorrent/qBittorrent/releases/tag/release-5.3.0
 image:
   repository: linuxserver/qbittorrent
-  tag: latest
+  tag: 5.2.3_v2.0.14-ls476
   pullPolicy: IfNotPresent
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -154,6 +158,9 @@ vpn:
   dot: "off"
   dnsAddress: "1.1.1.1"
   healthTargetAddress: "cloudflare.com"
+  # Gluetun's built-in health check server (reports VPN tunnel status), exposed
+  # via the qbittorrent Service so other pods (e.g. Cleanuparr) can poll it.
+  healthPort: 9999
   portForwarding:
     enabled: true
   image:

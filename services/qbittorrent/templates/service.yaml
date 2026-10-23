@@ -15,5 +15,11 @@ spec:
       name: "torrent-port"
       port: {{ .Values.torrentPort }}
       targetPort: {{ .Values.torrentPort }}
+    {{- if .Values.vpn.enabled }}
+    - protocol: TCP
+      name: "gluetun-health"
+      port: {{ .Values.vpn.healthPort }}
+      targetPort: {{ .Values.vpn.healthPort }}
+    {{- end }}
   selector:
     app: {{ include "qbittorrent.name" . }}
