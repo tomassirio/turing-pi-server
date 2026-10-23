@@ -10,8 +10,9 @@ image:
   repository: ghcr.io/cleanuparr/cleanuparr
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  # Pinned (not "latest") so upgrades are a deliberate version bump, not a
+  # silent no-op behind IfNotPresent once the tag is first cached.
+  tag: "2.10.12"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
