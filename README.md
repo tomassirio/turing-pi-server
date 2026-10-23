@@ -106,6 +106,43 @@ sudo systemctl start k3s
 
 Verify the bind mount took (`df -h /var/lib/rancher/k3s/agent/containerd` should show `/dev/sda`, ~938G) and `k3s` is `active` before deleting `containerd.old` to reclaim the SD card space.
 
+### 🐛 `k3s-agent` crash-looping with `fatal error: bad symbol table` (hit on turing-05, 2026-10-22)
+
+**Symptom:** a node goes `NotReady`/`Unknown` and stays there. `journalctl -u k3s-agent` shows it crash-restarting every few seconds (restart counts climbing into the thousands), always with the same panic:
+
+```
+runtime: pcdata is 3 and 1 args stack map entries for runtime.(*mcentral).grow (targetpc=0x41cd87)
+fatal error: bad symbol table
+```
+
+**It is not what it looks like.** This reads like corruption, so the obvious suspects were all checked and ruled out:
+- Corrupted binary — `sha256sum` of `/usr/local/bin/k3s` matched the official release checksum exactly.
+- Bad RAM — full-coverage `memtester` pass (all free memory, all patterns): zero failures.
+- Bad CPU core — reproduced identically with the process pinned to each core individually (`taskset -c 0/1/2/3`).
+- CPU computation defect — `stress-ng --cpu --verify` for 3 minutes: zero failures.
+- Go's known async-preemption signal race — `GODEBUG=asyncpreemptoff=1` made no difference.
+- Stale boot EEPROM — updated (`sudo rpi-eeprom-update -a` + reboot): no change.
+- Bad physical page behind the mmap'd text segment — dropped the page cache to force remapping: no change.
+
+**Root cause:** every single crash, across every test above, panicked at the *exact same* `targetpc=0x41cd87` inside `runtime.(*mcentral).grow` — not just in `k3s`, but in `crictl` too (a separate binary that happens to share the same Go runtime build, since k3s ships it internally). That perfect determinism is the tell: a real hardware/RAM fault wanders across addresses and timing; this didn't, ever. It's a bug in the exact machine code that k3s `v1.33.5+k3s1`'s Go 1.24.6 toolchain generated for that function, specifically on this node's kernel/CPU combo (Raspberry Pi 4B, Debian 13 trixie, kernel `6.18.34+rpt-rpi-v8` — the one node in the fleet not on bookworm/`6.6.31`). The OS/kernel hadn't changed in months; the bug was latent until a goroutine finally needed to grow its stack through this path.
+
+**Fix:** swap the `k3s` binary for a release built with a newer Go toolchain, staying on the *same* k3s minor version as the rest of the cluster (no control-plane version skew):
+
+```bash
+ssh pi@<node-ip> '
+curl -sSL -o /tmp/k3s-new "https://github.com/k3s-io/k3s/releases/download/v1.33.13+k3s2/k3s-arm64"
+chmod +x /tmp/k3s-new
+sudo systemctl stop k3s-agent   # or "k3s" on the control-plane node
+sudo cp /usr/local/bin/k3s /usr/local/bin/k3s.bak-v1.33.5
+sudo install -m 755 /tmp/k3s-new /usr/local/bin/k3s
+sudo systemctl start k3s-agent  # or "k3s"
+'
+```
+
+`v1.33.13+k3s2` (Go 1.25.11) does not reproduce the crash — confirmed with repeated standalone runs before rolling it out. The whole cluster was bumped to `v1.33.13+k3s2` after this incident; old binaries were left in place as `/usr/local/bin/k3s.bak-v1.33.5` on each node for rollback.
+
+If this resurfaces on a *newer* k3s/Go build too: the next thing to suspect is turing-05's kernel itself (still the only trixie/6.18 node in the fleet) — that would point toward reflashing it to bookworm to match the others, which wasn't needed this time.
+
 ### ✅ The Prerequisites
 
 Before you can deploy the services, you need to set up the cluster's core components. This involves installing MetalLB, an Nginx Ingress Controller, and CoreDNS.
