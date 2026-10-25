@@ -20,6 +20,10 @@ spec:
       name: "gluetun-health"
       port: {{ .Values.vpn.healthPort }}
       targetPort: {{ .Values.vpn.healthPort }}
+    - protocol: TCP
+      name: "gluetun-http-proxy"
+      port: {{ .Values.vpn.httpProxyPort }}
+      targetPort: {{ .Values.vpn.httpProxyPort }}
     {{- end }}
   selector:
     app: {{ include "qbittorrent.name" . }}

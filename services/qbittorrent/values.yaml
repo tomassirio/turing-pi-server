@@ -161,6 +161,9 @@ vpn:
   # Gluetun's built-in health check server (reports VPN tunnel status), exposed
   # via the qbittorrent Service so other pods (e.g. Cleanuparr) can poll it.
   healthPort: 9999
+  # Gluetun's built-in HTTP proxy, exposed via the qbittorrent Service so Prowlarr
+  # can route ISP-blocked indexers through the VPN (indexers tagged "vpn").
+  httpProxyPort: 8888
   portForwarding:
     enabled: true
   image:

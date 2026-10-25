@@ -95,6 +95,9 @@ spec:
             - name: health
               containerPort: {{ .Values.vpn.healthPort }}
               protocol: TCP
+            - name: http-proxy
+              containerPort: {{ .Values.vpn.httpProxyPort }}
+              protocol: TCP
           resources:
             {{- toYaml .Values.vpn.resources | nindent 12 }}
           securityContext: {{ toYaml .Values.vpn.securityContext | nindent 12 }}
@@ -116,6 +119,10 @@ spec:
               value: {{ .Values.vpn.healthTargetAddress | quote }}
             - name: HEALTH_SERVER_ADDRESS
               value: ":{{ .Values.vpn.healthPort }}"
+            - name: HTTPPROXY
+              value: "on"
+            - name: HTTPPROXY_LISTENING_ADDRESS
+              value: ":{{ .Values.vpn.httpProxyPort }}"
             {{- if .Values.vpn.portForwarding.enabled }}
             - name: VPN_PORT_FORWARDING
               value: "on"
