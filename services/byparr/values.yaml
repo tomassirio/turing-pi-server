@@ -61,6 +61,8 @@ ingress:
 env:
   LOG_LEVEL: "info"
   TZ: "Europe/Amsterdam"
+  # Egress via gluetun's HTTP proxy (qbittorrent Service) so ISP-blocked sites can be solved
+  PROXY_SERVER: "http://qbittorrent:8888"
 
 resources:
   limits:
