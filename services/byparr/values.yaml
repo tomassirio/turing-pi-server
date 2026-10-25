@@ -64,7 +64,7 @@ env:
 
 resources:
   limits:
-    cpu: 1000m
+    cpu: 2000m
     memory: 1Gi
     ephemeral-storage: 2Gi
   requests:
@@ -79,8 +79,9 @@ livenessProbe:
     port: 8191
   initialDelaySeconds: 30
   periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+  # Solving a challenge blocks the server; outlast the 120s requestTimeout set on the Prowlarr proxy
+  timeoutSeconds: 10
+  failureThreshold: 18
 readinessProbe:
   httpGet:
     path: /
@@ -111,7 +112,9 @@ volumeMounts: []
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
-nodeSelector: {}
+# Image is ~1GB+ (Chromium); other nodes' small disks hit DiskPressure pulling it
+nodeSelector:
+  kubernetes.io/hostname: turing-03
 
 tolerations: []
 
