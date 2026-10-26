@@ -41,7 +41,42 @@ serviceAccount:
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9794"
+  prometheus.io/path: "/metrics"
+
+additionalContainers:
+  - name: exportarr
+    image: ghcr.io/onedr0p/exportarr:latest
+    imagePullPolicy: IfNotPresent
+    args: ["lidarr"]
+    securityContext:
+      runAsUser: 911
+      runAsGroup: 911
+    env:
+      - name: PORT
+        value: "9794"
+      - name: URL
+        value: "http://localhost:8686"
+      - name: CONFIG
+        value: "/config/config.xml"
+    ports:
+      - name: metrics
+        containerPort: 9794
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+        ephemeral-storage: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+        ephemeral-storage: 256Mi
+    volumeMounts:
+      - name: config
+        mountPath: /config
+        readOnly: true
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
