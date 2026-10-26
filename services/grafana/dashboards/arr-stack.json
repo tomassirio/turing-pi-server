@@ -21,6 +21,17 @@
   "annotations": {
     "list": []
   },
+  "links": [
+    {
+      "title": "Turing Pi Cluster",
+      "type": "dashboards",
+      "tags": [
+        "cluster"
+      ],
+      "asDropdown": false,
+      "icon": "external link"
+    }
+  ],
   "panels": [
     {
       "type": "row",
