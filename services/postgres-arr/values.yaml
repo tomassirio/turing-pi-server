@@ -1,0 +1,46 @@
+# Shared Postgres for the *arr apps (one main + one log DB per app).
+# Replaces each app's SQLite DB, which lived in an emptyDir on the node's SD
+# card (restored from / backed up to the NAS) and made every write ~10s.
+#
+# Data sits on turing-03's SSD through hostPath, not the NFS export of that
+# same SSD: Postgres on NFS risks corruption (no real POSIX locking), and
+# running on turing-03 itself makes the disk genuinely local.
+#
+# Password lives in secrets.yaml, encrypted with sops.
+
+image:
+  repository: postgres
+  tag: 16-alpine
+  pullPolicy: IfNotPresent
+
+user: arr
+
+# Databases created on first init only (postgres skips initdb scripts once
+# the data dir exists). Adding an app later: create its DBs by hand with psql.
+apps: [sonarr, radarr, lidarr, prowlarr]
+
+hostPath: /mnt/ssd/postgres-arr
+
+nodeSelector:
+  kubernetes.io/hostname: turing-03
+
+# turing-03 is at ~92% cpu requests, keep the request small.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+# Nightly pg_dumpall to the NAS, replacing the SQLite rsync backups.
+backup:
+  schedule: "30 3 * * *"
+  existingClaim: nas-config-pvc
+  subPath: postgres-arr-backups
+  keep: 7
+
+secrets:
+  postgres:
+    data:
+      password: ""

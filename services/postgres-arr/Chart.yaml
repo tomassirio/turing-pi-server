@@ -1,0 +1,6 @@
+apiVersion: v2
+name: postgres-arr
+description: Shared Postgres for the *arr stack, on turing-03's local SSD
+type: application
+version: 0.1.0
+appVersion: "16"
