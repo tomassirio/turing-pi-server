@@ -100,6 +100,15 @@ Manual backup trigger:
         echo "✅ Backup completed at $(date)"
       }
 
+      # A pod restart (deploy, rollout, manual delete, node drain) sends
+      # SIGTERM before killing the container. Without this, any edit made
+      # since the last periodic backup is silently lost: the restore
+      # initContainer then rsyncs the stale pre-edit backup back over the
+      # fresh emptyDir on the next start. Catch SIGTERM and do one final
+      # sync before exiting so graceful restarts never lose un-backed-up
+      # changes. Doesn't cover SIGKILL / hard crash / power loss.
+      trap 'echo "🛑 SIGTERM received, running final backup before exit..."; do_backup; exit 0' TERM
+
       echo "⏰ Starting backup scheduler (every {{ .Values.persistence.backup.intervalSeconds | default 3600 }}s)..."
       echo "💡 Tip: Trigger manual backup with: kubectl exec -it <pod> -c backup-config -- touch /tmp/trigger-backup"
       # This sidecar's image is small and usually already cached, so it starts
