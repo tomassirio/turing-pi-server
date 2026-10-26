@@ -53,6 +53,25 @@ spec:
               value: "{{ .Values.env.PGID }}"
             - name: TZ
               value: "{{ .Values.env.TZ }}"
+            {{- with .Values.postgres }}
+            {{- if .enabled }}
+            - name: LIDARR__POSTGRES__HOST
+              value: {{ .host | quote }}
+            - name: LIDARR__POSTGRES__PORT
+              value: "5432"
+            - name: LIDARR__POSTGRES__USER
+              value: {{ .user | quote }}
+            - name: LIDARR__POSTGRES__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: POSTGRES_PASSWORD
+            - name: LIDARR__POSTGRES__MAINDB
+              value: lidarr-main
+            - name: LIDARR__POSTGRES__LOGDB
+              value: lidarr-log
+            {{- end }}
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:

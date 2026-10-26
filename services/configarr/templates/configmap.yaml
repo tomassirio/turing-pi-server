@@ -23,9 +23,7 @@ data:
           type: series
 
         include:
-          {{- range .Values.config.sonarr.templates }}
-          - template: {{ . }}
-          {{- end }}
+          {{- toYaml .Values.config.sonarr.templates | nindent 10 }}
 
         custom_formats: []
     {{- else }}
@@ -43,9 +41,7 @@ data:
           type: movie
 
         include:
-          {{- range .Values.config.radarr.templates }}
-          - template: {{ . }}
-          {{- end }}
+          {{- toYaml .Values.config.radarr.templates | nindent 10 }}
 
         custom_formats: []
     {{- else }}
@@ -63,9 +59,7 @@ data:
           type: music
 
         include:
-          {{- range .Values.config.lidarr.templates }}
-          - template: {{ . }}
-          {{- end }}
+          {{- toYaml .Values.config.lidarr.templates | nindent 10 }}
 
         custom_formats: []
     {{- else }}

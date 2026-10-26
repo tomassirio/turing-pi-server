@@ -16,7 +16,9 @@ image:
   # instead, so Lidarr throws DownloadClientAuthenticationException even
   # though the login actually succeeds. Fixed upstream in the v3 branch
   # (response.Content.IsNotNullOrWhiteSpace() && response.Content != "Ok.").
-  tag: lidarr-plugins-3.1.2.4913
+  # Pinned to the exact build that was running when its DB moved to
+  # postgres-arr (the plugins tag that used to be here never existed).
+  tag: 3.1.0.4875-ls45
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -89,6 +91,15 @@ env:
   PUID: "1000"
   PGID: "1000"
   TZ: "Europe/Amsterdam"
+
+# DB lives in services/postgres-arr (turing-03's SSD) instead of SQLite in the
+# emptyDir /config. /config still holds config.xml etc. and keeps the NAS
+# restore/backup.
+postgres:
+  enabled: true
+  host: postgres-arr
+  user: arr
+  secretName: postgres-arr
 
 resources:
   requests:

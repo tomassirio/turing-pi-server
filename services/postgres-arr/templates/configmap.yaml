@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-initdb
+data:
+  create-dbs.sql: |
+    {{- range .Values.apps }}
+    CREATE DATABASE "{{ . }}-main";
+    CREATE DATABASE "{{ . }}-log";
+    {{- end }}

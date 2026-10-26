@@ -52,6 +52,15 @@ env:
   PGID: "911"
   TZ: "Europe/Amsterdam"
 
+# DB lives in services/postgres-arr (turing-03's SSD) instead of SQLite in the
+# emptyDir /config, where every write took ~10s on the SD card. /config still
+# holds config.xml etc. and keeps the NAS restore/backup.
+postgres:
+  enabled: true
+  host: postgres-arr
+  user: arr
+  secretName: postgres-arr
+
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
   # - name: regcred
