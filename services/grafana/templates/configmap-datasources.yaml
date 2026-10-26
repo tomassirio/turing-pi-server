@@ -9,6 +9,8 @@ data:
     apiVersion: 1
     datasources:
       - name: Prometheus
+        # Pinned to the uid grafana.db already has, which dashboards/*.json reference.
+        uid: PBFA97CFB590B2093
         type: prometheus
         url: http://prometheus:9090
         access: proxy

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-dashboards
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+data:
+  # allowUiUpdates: UI edits still save to grafana.db, but the next pod start
+  # resets the dashboard to the JSON in git -- export edits back to dashboards/.
+  provider.yaml: |
+    apiVersion: 1
+    providers:
+      - name: repo
+        type: file
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana-dashboards
+  {{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}

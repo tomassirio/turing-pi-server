@@ -86,12 +86,12 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "9794"
   prometheus.io/path: "/metrics"
-  # exportarr fans out per-series API calls (episodes + episodefiles) against
-  # sonarr's own library on every scrape -- with 55+ series on this hardware
-  # that measured well past Prometheus's default 10s scrape_timeout, causing
-  # every scrape to fail outright. Give this target more room.
-  prometheus.io/scrape-interval: "60s"
-  prometheus.io/scrape-timeout: "30s"
+  # exportarr pages through /queue (~10 items/page, ~10s per page here): with
+  # a 473-item queue one scrape measured 102s. Timeout must stay below the
+  # interval, and the interval under Prometheus's 5m staleness window.
+  # ponytail: fails again past ~800 queued episodes; no exportarr knob for page size.
+  prometheus.io/scrape-interval: "3m"
+  prometheus.io/scrape-timeout: "170s"
 
 additionalContainers:
   - name: exportarr
@@ -108,8 +108,10 @@ additionalContainers:
         value: "http://localhost:8989"
       - name: CONFIG
         value: "/config/config.xml"
-      - name: ENABLE_ADDITIONAL_METRICS
-        value: "true"
+      # No ENABLE_ADDITIONAL_METRICS: it fans out /episode + /episodefile per
+      # series on every scrape (~216 calls for 108 series). Scrapes ran past
+      # 30s, overlapped, and kept sonarr pegged at ~1.4 cores. Only the
+      # episode-quality metric needed it.
     ports:
       - name: metrics
         containerPort: 9794
