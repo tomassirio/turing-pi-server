@@ -80,6 +80,15 @@ env:
   PGID: "911"
   TZ: "Europe/Amsterdam"
 
+# DB lives in services/postgres-arr (turing-03's SSD) instead of SQLite in the
+# emptyDir /config. /config still holds config.xml etc. and keeps the NAS
+# restore/backup.
+postgres:
+  enabled: true
+  host: postgres-arr
+  user: arr
+  secretName: postgres-arr
+
 resources:
   requests:
     ephemeral-storage: 256Mi
