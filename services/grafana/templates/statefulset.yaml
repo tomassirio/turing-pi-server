@@ -73,6 +73,13 @@ spec:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
+            - name: dashboards
+              mountPath: /etc/grafana/provisioning/dashboards/provider.yaml
+              subPath: provider.yaml
+              readOnly: true
+            - name: dashboards
+              mountPath: /var/lib/grafana-dashboards
+              readOnly: true
             - name: config
               mountPath: /var/lib/grafana
             {{- if .Values.persistence.restore.enabled }}
@@ -96,6 +103,9 @@ spec:
         - name: datasources
           configMap:
             name: {{ include "grafana.fullname" . }}-datasources
+        - name: dashboards
+          configMap:
+            name: {{ include "grafana.fullname" . }}-dashboards
         - name: config
           emptyDir: {}
         {{- if and .Values.persistence.restore.enabled (ne .Values.persistence.restore.existingClaim .Values.persistence.backup.existingClaim) }}
