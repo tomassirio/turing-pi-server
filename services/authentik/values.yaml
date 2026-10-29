@@ -44,7 +44,9 @@ authentik:
       hosts:
         - authentik.localhome.com
       tls:
-        - secretName: localhome-tls
+        # Dedicated cert (authentik-tls, templates/authentik-tls-secret.yaml)
+        # rather than the shared wildcard - see that file for why.
+        - secretName: authentik-tls
           hosts:
             - authentik.localhome.com
 
