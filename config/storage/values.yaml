@@ -122,6 +122,10 @@ tolerations: []
 
 affinity: {}
 
+# Created by this chart (see templates/namespaces.yaml) so their PVCs below can apply.
+namespaces:
+  - pppp
+
 nfs:
   pv:
     server: 192.168.2.103
