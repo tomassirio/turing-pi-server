@@ -122,6 +122,10 @@ tolerations: []
 
 affinity: {}
 
+# Created by this chart (see templates/namespaces.yaml) so their PVCs below can apply.
+namespaces:
+  - pppp
+
 nfs:
   pv:
     server: 192.168.2.103
@@ -218,6 +222,11 @@ nas:
         accessMode: ReadWriteMany
         path: /volume1/Wanderer/dev/thumbnails
         namespace: wanderer-dev
+      - name: pppp-data-pv
+        storage: 4Gi
+        accessMode: ReadWriteMany
+        path: /volume1/PPPP
+        namespace: pppp
     config:
       - name: nas-config-pv
         storage: 10Gi
@@ -255,6 +264,11 @@ nas:
         accessMode: ReadWriteMany
         persistentVolumeName: wanderer-command-dev-thumbnails-pv
         namespace: wanderer-dev
+      - name: pppp-data-pvc
+        storage: 4Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: pppp-data-pv
+        namespace: pppp
     config:
       - name: nas-config-pvc
         storage: 10Gi

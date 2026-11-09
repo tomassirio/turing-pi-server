@@ -1,0 +1,11 @@
+{{- /* Namespaces that exist only to hold a PVC from this chart before their app first deploys.
+       Kept on uninstall so deleting the storage release never wipes an app. */}}
+{{- range .Values.namespaces }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ . }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}
