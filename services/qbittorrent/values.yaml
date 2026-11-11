@@ -168,7 +168,8 @@ vpn:
     enabled: true
   image:
     repository: qmcgaw/gluetun
-    tag: latest
+    # Pinned: `latest` tracks gluetun's master branch (dev builds).
+    tag: v3.41.3
     pullPolicy: IfNotPresent
   securityContext:
     capabilities:

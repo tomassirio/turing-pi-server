@@ -104,6 +104,23 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.vpn.secretName }}
+            {{- if .Values.vpn.portForwarding.enabled }}
+            # QBITTORRENT_USER/PASS: the port-forward up command logs in to the
+            # WebUI API (localhost auth bypass is off, unauthenticated calls 403).
+            - secretRef:
+                name: {{ include "qbittorrent.fullname" . }}-exporter
+            {{- end }}
+          {{- if .Values.vpn.portForwarding.enabled }}
+          # gluetun doesn't retry port forwarding after a failure, so an empty
+          # port file means qBit is unreachable for good. Restart gluetun to get
+          # a fresh server.
+          livenessProbe:
+            exec:
+              command: ["test", "-s", "/tmp/gluetun/forwarded_port"]
+            initialDelaySeconds: 300
+            periodSeconds: 60
+            failureThreshold: 3
+          {{- end }}
           env:
             - name: VPN_SERVICE_PROVIDER
               value: {{ .Values.vpn.provider }}
@@ -130,12 +147,17 @@ spec:
               value: "on"
             - name: VPN_PORT_FORWARDING_PROVIDER
               value: {{ .Values.vpn.provider }}
+            - name: VPN_PORT_FORWARDING_STATUS_FILE
+              value: /tmp/gluetun/forwarded_port
             - name: VPN_PORT_FORWARDING_UP_COMMAND
               value: >-
-                /bin/sh -c 'wget -qO- --header "Content-Type: application/x-www-form-urlencoded"
-                --header "Referer: http://localhost:{{ .Values.webuiPort }}"
+                /bin/sh -c 'J=/tmp/qbt.cookies; R="Referer: http://localhost:{{ .Values.webuiPort }}";
+                wget -qO- --keep-session-cookies --save-cookies $J --header "$R"
+                --post-data "username=$QBITTORRENT_USER&password=$QBITTORRENT_PASS"
+                http://localhost:{{ .Values.webuiPort }}/api/v2/auth/login &&
+                wget -qO- --load-cookies $J --header "$R"
                 --post-data "json={\"listen_port\":{{ "{{PORTS}}" }}}"
-                http://localhost:{{ .Values.webuiPort }}/api/v2/app/setPreferences'
+                http://localhost:{{ .Values.webuiPort }}/api/v2/app/setPreferences; rm -f $J'
             {{- end }}
         {{- end }}
         {{- if .Values.exporter.enabled }}
