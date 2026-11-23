@@ -125,6 +125,7 @@ affinity: {}
 # Created by this chart (see templates/namespaces.yaml) so their PVCs below can apply.
 namespaces:
   - pppp
+  - ppppv2
 
 nfs:
   pv:
@@ -227,6 +228,12 @@ nas:
         accessMode: ReadWriteMany
         path: /volume1/PPPP
         namespace: pppp
+      # PPPPv2: its own NAS folder, so v1's data in /volume1/PPPP stays as it was.
+      - name: ppppv2-data-pv
+        storage: 4Gi
+        accessMode: ReadWriteMany
+        path: /volume1/PPPPv2
+        namespace: ppppv2
     config:
       - name: nas-config-pv
         storage: 10Gi
@@ -269,6 +276,11 @@ nas:
         accessMode: ReadWriteMany
         persistentVolumeName: pppp-data-pv
         namespace: pppp
+      - name: ppppv2-data-pvc
+        storage: 4Gi
+        accessMode: ReadWriteMany
+        persistentVolumeName: ppppv2-data-pv
+        namespace: ppppv2
     config:
       - name: nas-config-pvc
         storage: 10Gi
