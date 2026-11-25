@@ -1914,7 +1914,7 @@
     },
     {
       "type": "row",
-      "title": "Game Boys",
+      "title": "Engagement",
       "collapsed": false,
       "id": 26,
       "panels": [],
@@ -1927,8 +1927,8 @@
     },
     {
       "type": "stat",
-      "title": "Average Speed",
-      "description": "Measured speed of running Game Boys (1x = a real Game Boy; Fast pulls it up).",
+      "title": "Active Today",
+      "description": "Pibs who played today (UTC): a button or the page's activity ping.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -1937,6 +1937,1337 @@
       "gridPos": {
         "x": 0,
         "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_players_active{project=\"ppppv2\",window=\"today\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#0ca30c"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Active (7 days)",
+      "description": "Pibs who played in the last 7 days.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 28,
+      "gridPos": {
+        "x": 4,
+        "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_players_active{project=\"ppppv2\",window=\"7d\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Active (30 days)",
+      "description": "Pibs who played in the last 30 days.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 29,
+      "gridPos": {
+        "x": 8,
+        "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_players_active{project=\"ppppv2\",window=\"30d\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#8ab8ff"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Back Next Day",
+      "description": "Of yesterday's Pibs, the share who played again today.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 30,
+      "gridPos": {
+        "x": 12,
+        "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_players_returned{project=\"ppppv2\",after=\"1d\"}) / (max(pppp_players_active{project=\"ppppv2\",window=\"yesterday\"}) > 0) * 100",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#d03b3b",
+                "value": null
+              },
+              {
+                "color": "#fab219",
+                "value": 30
+              },
+              {
+                "color": "#0ca30c",
+                "value": 60
+              }
+            ]
+          },
+          "decimals": 0,
+          "noValue": "nobody yesterday"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Back Next Week",
+      "description": "Of the Pibs who played 8-14 days ago, the share who played in the last 7 days.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 31,
+      "gridPos": {
+        "x": 16,
+        "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_players_returned{project=\"ppppv2\",after=\"7d\"}) / (max(pppp_players_active_prev_week{project=\"ppppv2\"}) > 0) * 100",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#d03b3b",
+                "value": null
+              },
+              {
+                "color": "#fab219",
+                "value": 30
+              },
+              {
+                "color": "#0ca30c",
+                "value": 60
+              }
+            ]
+          },
+          "decimals": 0,
+          "noValue": "needs 2 weeks"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Average Visit (24h)",
+      "description": "How long a /play visit lasts on average (screen open to closed).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 32,
+      "gridPos": {
+        "x": 20,
+        "y": 31,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(pppp_play_session_seconds_sum{project=\"ppppv2\"}[24h])) / (sum(increase(pppp_play_session_seconds_count{project=\"ppppv2\"}[24h])) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0,
+          "noValue": "no visits yet"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Daily Active Pibs",
+      "description": "Pibs who played today and in the last 7 days.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 33,
+      "gridPos": {
+        "x": 0,
+        "y": 35,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_players_active{project=\"ppppv2\",window=\"today\"})) or on() vector(0)",
+          "legendFormat": "today",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_players_active{project=\"ppppv2\",window=\"7d\"})) or on() vector(0)",
+          "legendFormat": "last 7 days",
+          "instant": false,
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 30,
+            "showPoints": "never",
+            "spanNulls": true,
+            "axisSoftMin": 0,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#0ca30c",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "today"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0ca30c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last 7 days"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Visit Length (24h)",
+      "description": "/play visits today by how long they lasted.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 34,
+      "gridPos": {
+        "x": 8,
+        "y": 35,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"60.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "< 1 min",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"300.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"60.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "1-5 min",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"900.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"300.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "5-15 min",
+          "instant": true,
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"1800.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"900.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "15-30 min",
+          "instant": true,
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"3600.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"1800.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "30-60 min",
+          "instant": true,
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"7200.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"3600.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "1-2 h",
+          "instant": true,
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"14400.0\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"7200.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "2-4 h",
+          "instant": true,
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"+Inf\"}[24h])) - sum(increase(pppp_play_session_seconds_bucket{project=\"ppppv2\",le=\"14400.0\"}[24h]))) or on() vector(0)",
+          "legendFormat": "4 h +",
+          "instant": true,
+          "range": false,
+          "refId": "H"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "decimals": 0,
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3987e5",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "vertical",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Play Hours to Reach",
+      "description": "Average in-game play time when Pibs reached each step (only unlocks seen since this was added; the count of Pibs is in the tooltip).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 35,
+      "gridPos": {
+        "x": 16,
+        "y": 35,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_hours_to_avg{project=\"ppppv2\",step=\"first badge\"})",
+          "legendFormat": "first badge",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_hours_to_avg{project=\"ppppv2\",step=\"eight badges\"})",
+          "legendFormat": "eight badges",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_hours_to_avg{project=\"ppppv2\",step=\"champion\"})",
+          "legendFormat": "champion",
+          "instant": true,
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_hours_to_avg{project=\"ppppv2\",step=\"red defeated\"})",
+          "legendFormat": "red defeated",
+          "instant": true,
+          "range": false,
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "min": 0,
+          "decimals": 1,
+          "noValue": "—",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#0ca30c",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "manual",
+        "minVizHeight": 16,
+        "maxVizHeight": 26,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Shinies",
+      "description": "Shiny Pokémon ever seen in a Pib's party, added up.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 36,
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_shinies{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Eggs Hatched",
+      "description": "Added up over every Pib.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 37,
+      "gridPos": {
+        "x": 3,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_eggs_hatched{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Gifts Sent",
+      "description": "Mystery Gifts sent by admins (running total).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 38,
+      "gridPos": {
+        "x": 6,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_gifts{project=\"ppppv2\",state=\"sent\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Gifts Received",
+      "description": "Mystery Gifts that reached a game (running total).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 39,
+      "gridPos": {
+        "x": 9,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_gifts{project=\"ppppv2\",state=\"delivered\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#ff9830",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Gifts Waiting",
+      "description": "Queued until the player is free in the overworld.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 40,
+      "gridPos": {
+        "x": 12,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_gifts{project=\"ppppv2\",state=\"waiting\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#fab219",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Notes Liked",
+      "description": "Notes on the ground at least one Pib rated Good / Good ratings in all.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 41,
+      "gridPos": {
+        "x": 15,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_notes_rated{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "notes",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_note_goods{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "goods",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Sign-ups Waiting",
+      "description": "Sign-in requests waiting for an admin, and how long the oldest has waited.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 42,
+      "gridPos": {
+        "x": 18,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_access_requests{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "waiting",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_access_request_oldest_seconds{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "oldest",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "oldest"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Avg Wait to Get In",
+      "description": "How long requests waited before an admin let them in (all time).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 43,
+      "gridPos": {
+        "x": 21,
+        "y": 43,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "max(pppp_access_wait_seconds{project=\"ppppv2\"}) / (max(pppp_access_accepted{project=\"ppppv2\"}) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0,
+          "noValue": "none let in yet"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Game Boys",
+      "collapsed": false,
+      "id": 44,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Average Speed",
+      "description": "Measured speed of running Game Boys (1x = a real Game Boy; Fast pulls it up).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 45,
+      "gridPos": {
+        "x": 0,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2004,10 +3335,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 28,
+      "id": 46,
       "gridPos": {
         "x": 4,
-        "y": 31,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2075,10 +3406,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 29,
+      "id": 47,
       "gridPos": {
         "x": 8,
-        "y": 31,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2141,10 +3472,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 30,
+      "id": 48,
       "gridPos": {
         "x": 12,
-        "y": 31,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2204,10 +3535,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 31,
+      "id": 49,
       "gridPos": {
         "x": 16,
-        "y": 31,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2267,10 +3598,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 32,
+      "id": 50,
       "gridPos": {
         "x": 20,
-        "y": 31,
+        "y": 48,
         "w": 4,
         "h": 4
       },
@@ -2331,10 +3662,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 33,
+      "id": 51,
       "gridPos": {
         "x": 0,
-        "y": 35,
+        "y": 52,
         "w": 8,
         "h": 8
       },
@@ -2478,10 +3809,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 34,
+      "id": 52,
       "gridPos": {
         "x": 8,
-        "y": 35,
+        "y": 52,
         "w": 10,
         "h": 8
       },
@@ -2667,10 +3998,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 35,
+      "id": 53,
       "gridPos": {
         "x": 18,
-        "y": 35,
+        "y": 52,
         "w": 6,
         "h": 8
       },
@@ -2807,10 +4138,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 36,
+      "id": 54,
       "gridPos": {
         "x": 0,
-        "y": 43,
+        "y": 60,
         "w": 24,
         "h": 6
       },
@@ -2921,11 +4252,11 @@
       "type": "row",
       "title": "Players",
       "collapsed": false,
-      "id": 37,
+      "id": 55,
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 49,
+        "y": 66,
         "w": 24,
         "h": 1
       }
@@ -2938,10 +4269,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 38,
+      "id": 56,
       "gridPos": {
         "x": 0,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3001,10 +4332,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 39,
+      "id": 57,
       "gridPos": {
         "x": 4,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3064,10 +4395,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 40,
+      "id": 58,
       "gridPos": {
         "x": 8,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3127,10 +4458,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 41,
+      "id": 59,
       "gridPos": {
         "x": 12,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3190,10 +4521,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 42,
+      "id": 60,
       "gridPos": {
         "x": 16,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3253,10 +4584,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 43,
+      "id": 61,
       "gridPos": {
         "x": 20,
-        "y": 50,
+        "y": 67,
         "w": 4,
         "h": 4
       },
@@ -3316,10 +4647,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 44,
+      "id": 62,
       "gridPos": {
         "x": 0,
-        "y": 54,
+        "y": 71,
         "w": 12,
         "h": 8
       },
@@ -3459,10 +4790,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 45,
+      "id": 63,
       "gridPos": {
         "x": 12,
-        "y": 54,
+        "y": 71,
         "w": 12,
         "h": 8
       },
@@ -3568,11 +4899,11 @@
       "type": "row",
       "title": "Activity",
       "collapsed": false,
-      "id": 46,
+      "id": 64,
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 62,
+        "y": 79,
         "w": 24,
         "h": 1
       }
@@ -3585,10 +4916,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 47,
+      "id": 65,
       "gridPos": {
         "x": 0,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3651,10 +4982,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 48,
+      "id": 66,
       "gridPos": {
         "x": 4,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3717,10 +5048,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 49,
+      "id": 67,
       "gridPos": {
         "x": 8,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3783,10 +5114,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 50,
+      "id": 68,
       "gridPos": {
         "x": 12,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3849,10 +5180,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 51,
+      "id": 69,
       "gridPos": {
         "x": 16,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3915,10 +5246,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 52,
+      "id": 70,
       "gridPos": {
         "x": 20,
-        "y": 63,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -3981,10 +5312,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 53,
+      "id": 71,
       "gridPos": {
         "x": 0,
-        "y": 67,
+        "y": 84,
         "w": 12,
         "h": 8
       },
@@ -4154,10 +5485,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 54,
+      "id": 72,
       "gridPos": {
         "x": 12,
-        "y": 67,
+        "y": 84,
         "w": 12,
         "h": 8
       },
@@ -4292,11 +5623,11 @@
       "type": "row",
       "title": "Backend",
       "collapsed": false,
-      "id": 55,
+      "id": 73,
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 75,
+        "y": 92,
         "w": 24,
         "h": 1
       }
@@ -4309,10 +5640,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 56,
+      "id": 74,
       "gridPos": {
         "x": 0,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4375,10 +5706,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 57,
+      "id": 75,
       "gridPos": {
         "x": 4,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4446,10 +5777,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 58,
+      "id": 76,
       "gridPos": {
         "x": 8,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4510,10 +5841,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 59,
+      "id": 77,
       "gridPos": {
         "x": 12,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4581,10 +5912,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 60,
+      "id": 78,
       "gridPos": {
         "x": 16,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4644,10 +5975,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 61,
+      "id": 79,
       "gridPos": {
         "x": 20,
-        "y": 76,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4708,10 +6039,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 62,
+      "id": 80,
       "gridPos": {
         "x": 0,
-        "y": 80,
+        "y": 97,
         "w": 12,
         "h": 8
       },
@@ -4883,10 +6214,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 63,
+      "id": 81,
       "gridPos": {
         "x": 12,
-        "y": 80,
+        "y": 97,
         "w": 12,
         "h": 8
       },
@@ -5099,10 +6430,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 64,
+      "id": 82,
       "gridPos": {
         "x": 0,
-        "y": 88,
+        "y": 105,
         "w": 8,
         "h": 8
       },
@@ -5237,10 +6568,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 65,
+      "id": 83,
       "gridPos": {
         "x": 8,
-        "y": 88,
+        "y": 105,
         "w": 8,
         "h": 8
       },
@@ -5311,10 +6642,10 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "id": 66,
+      "id": 84,
       "gridPos": {
         "x": 16,
-        "y": 88,
+        "y": 105,
         "w": 8,
         "h": 8
       },
