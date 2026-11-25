@@ -184,6 +184,20 @@ data:
               namespace: 'wanderer'
               component: 'query'
 
+      # PPPPv2 - Production
+      - job_name: 'ppppv2-backend-prod'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['ppppv2-backend.ppppv2.svc.cluster.local:8080']
+            labels:
+              project: 'ppppv2'
+              application: 'ppppv2-backend'
+              environment: 'production'
+              namespace: 'ppppv2'
+              component: 'backend'
+
       # Wanderer - Development
       - job_name: 'wanderer-auth-dev'
         metrics_path: '/actuator/prometheus'
