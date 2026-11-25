@@ -79,6 +79,34 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# Grafana settings as GF_* environment variables.
+env:
+  # Links Grafana builds (share links, public dashboard URLs) use this instead of http://localhost:3000.
+  GF_SERVER_ROOT_URL: https://grafana.localhome.com
+
+# Public dashboards on the internet, nothing else: an Ingress on the internet-facing controller
+# (services/ingress-nginx-public, 192.168.2.203 - the router's WAN 443 target) that routes only the
+# paths a public dashboard needs. The login page, the API and every private dashboard 404 there.
+# DNS: a CNAME for the host to tomassirio.myddns.me (DNS only, like jellyfin.tomassir.io).
+publicIngress:
+  enabled: true
+  host: stats.tomassir.io
+  className: nginx-public
+  issuer: letsencrypt
+  tlsSecretName: stats-tomassir-io-tls
+  # Where "/" sends visitors: a public dashboard's URL (Share > Public dashboard in Grafana).
+  home: /public-dashboards/a84eece3913d4bf7bff4f4c14d50b25e
+  paths:
+    - /public-dashboards/  # the page
+    - /api/public/         # its queries and annotations (token-scoped)
+    - /public/             # Grafana's scripts, styles, fonts, images
+  # The page also POSTs its load timings to /api/frontend-metrics, which Grafana only takes from signed-in users
+  # (an "Unauthorized" toast every minute for visitors). On this host a tiny nginx answers it with 204 instead.
+  sink:
+    image: nginx:1.27-alpine
+    paths:
+      - /api/frontend-metrics
+
 resources:
   requests:
     ephemeral-storage: 256Mi

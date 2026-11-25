@@ -1,0 +1,43 @@
+{{- with .Values.publicIngress }}
+{{- if .enabled }}
+{{- $fullName := include "grafana.fullname" $ }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-public
+  labels:
+    {{- include "grafana.labels" $ | nindent 4 }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .issuer }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/app-root: {{ .home | quote }}
+spec:
+  ingressClassName: {{ .className }}
+  tls:
+    - secretName: {{ .tlsSecretName }}
+      hosts:
+        - {{ .host | quote }}
+  rules:
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ . }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+          {{- range .sink.paths }}
+          - path: {{ . }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ $fullName }}-public-sink
+                port:
+                  number: 80
+          {{- end }}
+{{- end }}
+{{- end }}

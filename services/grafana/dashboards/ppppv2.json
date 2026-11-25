@@ -1264,7 +1264,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "h",
+          "unit": "suffix: h",
           "color": {
             "mode": "fixed",
             "fixedColor": "text"
@@ -1536,8 +1536,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#d03b3b",
+                "color": "text",
                 "value": null
+              },
+              {
+                "color": "#d03b3b",
+                "value": 0
               },
               {
                 "color": "#fab219",
@@ -2153,8 +2157,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#d03b3b",
+                "color": "text",
                 "value": null
+              },
+              {
+                "color": "#d03b3b",
+                "value": 0
               },
               {
                 "color": "#fab219",
@@ -2225,8 +2233,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#d03b3b",
+                "color": "text",
                 "value": null
+              },
+              {
+                "color": "#d03b3b",
+                "value": 0
               },
               {
                 "color": "#fab219",
