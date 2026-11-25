@@ -1,0 +1,18 @@
+# PPPPv2 Backend - Production Environment
+# Namespace: ppppv2
+#
+# Copy this content into the main configmap.yaml under scrape_configs section
+# /actuator/prometheus is only reachable inside the cluster (the frontend's nginx never proxies /actuator).
+
+- job_name: 'ppppv2-backend-prod'
+  metrics_path: '/actuator/prometheus'
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  static_configs:
+    - targets: ['ppppv2-backend.ppppv2.svc.cluster.local:8080']
+      labels:
+        project: 'ppppv2'
+        application: 'ppppv2-backend'
+        environment: 'production'
+        namespace: 'ppppv2'
+        component: 'backend'

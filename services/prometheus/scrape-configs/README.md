@@ -10,6 +10,8 @@ scrape-configs/
 │   └── scrape-config.yml           # Prometheus self-monitoring, kube-state-metrics
 ├── kubernetes/
 │   └── discovery.yml               # Kubernetes auto-discovery configs
+├── ppppv2/
+│   └── production.yml              # PPPPv2 backend (game metrics + JVM/HTTP)
 └── wanderer/
     ├── production.yml              # Wanderer production services
     └── development.yml             # Wanderer development services
