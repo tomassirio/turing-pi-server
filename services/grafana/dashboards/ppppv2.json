@@ -3257,13 +3257,933 @@
     },
     {
       "type": "row",
+      "title": "Community",
+      "collapsed": false,
+      "id": 85,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Wonder Trades (7d)",
+      "description": "Wonder Trades made in the last 7 days (one per swap).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 86,
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"WONDER_TRADE\"}[7d]))) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "In the Wonder Pool",
+      "description": "Pokémon waiting in the Wonder Trade pool for the next Pib.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 87,
+      "gridPos": {
+        "x": 3,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_wonder_pool{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Pibs' Dex Caught",
+      "description": "Species any Pib has caught (the Pibs' Pokédex, of 251).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 88,
+      "gridPos": {
+        "x": 6,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_group_dex{project=\"ppppv2\",state=\"caught\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Pibs' Dex Seen",
+      "description": "Species any Pib has seen (the Pibs' Pokédex, of 251).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 89,
+      "gridPos": {
+        "x": 9,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_group_dex{project=\"ppppv2\",state=\"seen\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "First Catches (7d)",
+      "description": "Species caught for the first time by any Pib in the last 7 days.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 90,
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"DEX_FIRST\"}[7d]))) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Bloodstains",
+      "description": "Bloodstains on the ground: blackouts in the last 48 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 91,
+      "gridPos": {
+        "x": 15,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_bloodstains{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Reactions (24h)",
+      "description": "Spectator reactions sent on /watch in the last 24 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 92,
+      "gridPos": {
+        "x": 18,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "round(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"WATCH_REACTION\"}[24h]))) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Konami Found",
+      "description": "Pibs who entered the Konami code and got the prima donna.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 93,
+      "gridPos": {
+        "x": 21,
+        "y": 48,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_konami_gifts{project=\"ppppv2\"})) or on() vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "#e0b228",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "AAAA's Calls",
+      "description": "Pibs each of AAAA's Pokégear calls has rung for (??? first, AAAA on Mt. Silver).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 94,
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"badge\"})) or on() vector(0)",
+          "legendFormat": "Zephyr Badge",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"rocket\"})) or on() vector(0)",
+          "legendFormat": "Rocket bust",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"blackout\"})) or on() vector(0)",
+          "legendFormat": "First blackout",
+          "instant": true,
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"birb\"})) or on() vector(0)",
+          "legendFormat": "Ho-Oh / Lugia",
+          "instant": true,
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"champion\"})) or on() vector(0)",
+          "legendFormat": "Champion",
+          "instant": true,
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"kanto\"})) or on() vector(0)",
+          "legendFormat": "Kanto badges",
+          "instant": true,
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"lost\"})) or on() vector(0)",
+          "legendFormat": "Lost to AAAA",
+          "instant": true,
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_aaaa_calls{project=\"ppppv2\",call=\"beaten\"})) or on() vector(0)",
+          "legendFormat": "Beat AAAA",
+          "instant": true,
+          "range": false,
+          "refId": "H"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "decimals": 0,
+          "noValue": "—",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#a352cc"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#0ca30c",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "manual",
+        "minVizHeight": 16,
+        "maxVizHeight": 26,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Pibs' Pokédex",
+      "description": "Species seen and caught by any Pib, of 251.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 95,
+      "gridPos": {
+        "x": 8,
+        "y": 52,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_group_dex{project=\"ppppv2\",state=\"seen\"})) or on() vector(0)",
+          "legendFormat": "seen",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(max(pppp_group_dex{project=\"ppppv2\",state=\"caught\"})) or on() vector(0)",
+          "legendFormat": "caught",
+          "instant": false,
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 30,
+            "showPoints": "never",
+            "spanNulls": true,
+            "axisSoftMin": 0,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#0ca30c",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0,
+          "max": 251
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "seen"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0ca30c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "caught"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Community per Day",
+      "description": "Wonder Trades, first catches, spectator reactions and Mystery Gifts in the last 24 hours, rolling.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "id": 96,
+      "gridPos": {
+        "x": 16,
+        "y": 52,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"WONDER_TRADE\"}[1d]))) or on() vector(0)",
+          "legendFormat": "wonder trades",
+          "instant": false,
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"DEX_FIRST\"}[1d]))) or on() vector(0)",
+          "legendFormat": "first catches",
+          "instant": false,
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"WATCH_REACTION\"}[1d]))) or on() vector(0)",
+          "legendFormat": "reactions",
+          "instant": false,
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum(increase(pppp_events_total{project=\"ppppv2\",type=\"MYSTERY_GIFT\"}[1d]))) or on() vector(0)",
+          "legendFormat": "mystery gifts",
+          "instant": false,
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 30,
+            "showPoints": "never",
+            "spanNulls": true,
+            "axisSoftMin": 0,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#0ca30c",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
       "title": "Game Boys",
       "collapsed": false,
       "id": 44,
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 60,
         "w": 24,
         "h": 1
       }
@@ -3279,7 +4199,7 @@
       "id": 45,
       "gridPos": {
         "x": 0,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3350,7 +4270,7 @@
       "id": 46,
       "gridPos": {
         "x": 4,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3421,7 +4341,7 @@
       "id": 47,
       "gridPos": {
         "x": 8,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3487,7 +4407,7 @@
       "id": 48,
       "gridPos": {
         "x": 12,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3550,7 +4470,7 @@
       "id": 49,
       "gridPos": {
         "x": 16,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3613,7 +4533,7 @@
       "id": 50,
       "gridPos": {
         "x": 20,
-        "y": 48,
+        "y": 61,
         "w": 4,
         "h": 4
       },
@@ -3677,7 +4597,7 @@
       "id": 51,
       "gridPos": {
         "x": 0,
-        "y": 52,
+        "y": 65,
         "w": 8,
         "h": 8
       },
@@ -3824,7 +4744,7 @@
       "id": 52,
       "gridPos": {
         "x": 8,
-        "y": 52,
+        "y": 65,
         "w": 10,
         "h": 8
       },
@@ -4013,7 +4933,7 @@
       "id": 53,
       "gridPos": {
         "x": 18,
-        "y": 52,
+        "y": 65,
         "w": 6,
         "h": 8
       },
@@ -4153,7 +5073,7 @@
       "id": 54,
       "gridPos": {
         "x": 0,
-        "y": 60,
+        "y": 73,
         "w": 24,
         "h": 6
       },
@@ -4268,7 +5188,7 @@
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 66,
+        "y": 79,
         "w": 24,
         "h": 1
       }
@@ -4284,7 +5204,7 @@
       "id": 56,
       "gridPos": {
         "x": 0,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4347,7 +5267,7 @@
       "id": 57,
       "gridPos": {
         "x": 4,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4410,7 +5330,7 @@
       "id": 58,
       "gridPos": {
         "x": 8,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4473,7 +5393,7 @@
       "id": 59,
       "gridPos": {
         "x": 12,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4536,7 +5456,7 @@
       "id": 60,
       "gridPos": {
         "x": 16,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4599,7 +5519,7 @@
       "id": 61,
       "gridPos": {
         "x": 20,
-        "y": 67,
+        "y": 80,
         "w": 4,
         "h": 4
       },
@@ -4662,7 +5582,7 @@
       "id": 62,
       "gridPos": {
         "x": 0,
-        "y": 71,
+        "y": 84,
         "w": 12,
         "h": 8
       },
@@ -4805,7 +5725,7 @@
       "id": 63,
       "gridPos": {
         "x": 12,
-        "y": 71,
+        "y": 84,
         "w": 12,
         "h": 8
       },
@@ -4915,7 +5835,7 @@
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 79,
+        "y": 92,
         "w": 24,
         "h": 1
       }
@@ -4931,7 +5851,7 @@
       "id": 65,
       "gridPos": {
         "x": 0,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -4997,7 +5917,7 @@
       "id": 66,
       "gridPos": {
         "x": 4,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -5063,7 +5983,7 @@
       "id": 67,
       "gridPos": {
         "x": 8,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -5129,7 +6049,7 @@
       "id": 68,
       "gridPos": {
         "x": 12,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -5195,7 +6115,7 @@
       "id": 69,
       "gridPos": {
         "x": 16,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -5261,7 +6181,7 @@
       "id": 70,
       "gridPos": {
         "x": 20,
-        "y": 80,
+        "y": 93,
         "w": 4,
         "h": 4
       },
@@ -5327,7 +6247,7 @@
       "id": 71,
       "gridPos": {
         "x": 0,
-        "y": 84,
+        "y": 97,
         "w": 12,
         "h": 8
       },
@@ -5500,7 +6420,7 @@
       "id": 72,
       "gridPos": {
         "x": 12,
-        "y": 84,
+        "y": 97,
         "w": 12,
         "h": 8
       },
@@ -5639,7 +6559,7 @@
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 92,
+        "y": 105,
         "w": 24,
         "h": 1
       }
@@ -5655,7 +6575,7 @@
       "id": 74,
       "gridPos": {
         "x": 0,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -5721,7 +6641,7 @@
       "id": 75,
       "gridPos": {
         "x": 4,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -5792,7 +6712,7 @@
       "id": 76,
       "gridPos": {
         "x": 8,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -5856,7 +6776,7 @@
       "id": 77,
       "gridPos": {
         "x": 12,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -5927,7 +6847,7 @@
       "id": 78,
       "gridPos": {
         "x": 16,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -5990,7 +6910,7 @@
       "id": 79,
       "gridPos": {
         "x": 20,
-        "y": 93,
+        "y": 106,
         "w": 4,
         "h": 4
       },
@@ -6054,7 +6974,7 @@
       "id": 80,
       "gridPos": {
         "x": 0,
-        "y": 97,
+        "y": 110,
         "w": 12,
         "h": 8
       },
@@ -6229,7 +7149,7 @@
       "id": 81,
       "gridPos": {
         "x": 12,
-        "y": 97,
+        "y": 110,
         "w": 12,
         "h": 8
       },
@@ -6445,7 +7365,7 @@
       "id": 82,
       "gridPos": {
         "x": 0,
-        "y": 105,
+        "y": 118,
         "w": 8,
         "h": 8
       },
@@ -6583,7 +7503,7 @@
       "id": 83,
       "gridPos": {
         "x": 8,
-        "y": 105,
+        "y": 118,
         "w": 8,
         "h": 8
       },
@@ -6657,7 +7577,7 @@
       "id": 84,
       "gridPos": {
         "x": 16,
-        "y": 105,
+        "y": 118,
         "w": 8,
         "h": 8
       },
